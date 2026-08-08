@@ -42,8 +42,20 @@ padding:32px 16px 116px;
   .frame{width:100%; max-width:680px;}
 
   .header{
-    text-align:center;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
     margin-bottom:20px;
+  }
+  .header-title{
+    text-align:center;
+    max-width:100%;
+    padding:8px 20px;
+    border-radius:16px;
+    background:rgba(255,255,255,.62);
+    backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);
   }
   .header .eyebrow{
 font-size:12px;
@@ -51,6 +63,7 @@ letter-spacing:.08em;
 text-transform:uppercase;
 color:#6b7280;
 font-weight:600;
+text-shadow:0 1px 3px rgba(255,255,255,.5);
 }
   .header h1{
 font-family:var(--font);
@@ -58,6 +71,9 @@ font-weight:700;
 font-size:30px;
 margin:6px 0 0;
 color:#1f2937;
+text-shadow:0 1px 3px rgba(255,255,255,.5);
+max-width:100%;
+overflow-wrap:break-word;
 }
 
   .tile-border{display:none;}
@@ -301,6 +317,9 @@ color:#1f2937;
     line-height:1.55;
     color:var(--ink);
     display:none;
+  }
+  .tip-box #tipText{
+    white-space:pre-wrap;
   }
   .tip-box .tip-label{
     font-family:var(--font);
@@ -660,15 +679,19 @@ body.dark-mode .zoom-controls button:hover{
 }
 
 /* --- Local library / stats --- */
-.header{position:relative;}
 .header-actions{
-  position:absolute; top:0; right:0;
-  display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;
-  max-width:70%;
+  display:flex; gap:6px; flex-wrap:wrap; justify-content:center;
+  max-width:100%;
 }
 .stats-toggle{
   font-size:12px !important; padding:7px 10px !important;
   white-space:nowrap;
+  background:rgba(255,255,255,.62) !important;
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+}
+@media (min-width:520px){
+  .header-actions{ justify-content:flex-end; }
 }
 .sets-bar{
   margin:0 0 18px;
@@ -776,18 +799,34 @@ body.dark-mode .zoom-controls button:hover{
   border-radius:20px;
   margin-top:4px;
 }
+.set-item-progress.done{
+  color:#1F7A4D;
+  background:#E4F5EC;
+}
 .search-input{
   width:100%;
   font-family:var(--font);
   font-size:14px;
-  padding:12px 14px;
+  padding:12px 40px;
   border:1.5px solid var(--tile-blue-pale);
   border-radius:14px;
   background:#fff;
   color:var(--ink);
-  margin-bottom:18px;
 }
 .search-input:focus{outline:2px solid var(--tile-blue-mid); outline-offset:1px;}
+.search-wrap{position:relative; margin-bottom:14px;}
+.search-icon{
+  position:absolute; left:14px; top:50%; transform:translateY(-50%);
+  font-size:14px; opacity:.5; pointer-events:none;
+}
+.search-clear{
+  position:absolute; right:8px; top:50%; transform:translateY(-50%);
+  width:24px; height:24px; border-radius:50%; border:none;
+  background:var(--tile-blue-paler); color:var(--tile-blue);
+  font-size:12px; line-height:1; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+}
+.search-clear:hover{background:var(--tile-blue-pale);}
 .folder-tile{position:relative;}
 .folder-tile .paused-dot{
   position:absolute;
@@ -839,8 +878,8 @@ body.dark-mode .zoom-controls button:hover{
 .acc-bar-fill{height:100%; background:var(--tile-blue-mid);}
 
 /* --- Landing & folders --- */
-.landing-intro{font-size:13px; color:var(--ink-soft); line-height:1.55; margin:0 0 18px;}
-.landing-actions{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px;}
+.landing-intro{font-size:12.5px; color:var(--ink-soft); line-height:1.5; margin:0 0 14px;}
+.landing-actions{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:22px;}
 .folder-grid{
   display:grid;
   grid-template-columns:repeat(auto-fill, minmax(140px, 1fr));
@@ -952,8 +991,10 @@ body.dark-mode .zoom-controls button:hover{
 
 <div class="frame">
   <div class="header">
-    <div class="eyebrow">Study set</div>
-    <h1>Topic Review</h1>
+    <div class="header-title">
+      <div class="eyebrow">Study set</div>
+      <h1>Topic Review</h1>
+    </div>
     <div class="header-actions">
       <button class="btn-ghost stats-toggle" id="homeBtn" title="Home">🏠 Home</button>
       <button class="btn-ghost stats-toggle" id="statsToggleBtn" title="Stats">📊 Stats</button>
@@ -1039,15 +1080,19 @@ body.dark-mode .zoom-controls button:hover{
             <button class="btn-ghost" id="discardResumeBtn">Discard</button>
           </div>
         </div>
-        <p class="landing-intro">Your sets, filed automatically by Subject — saved right on this device. Open a folder to study, or start something new.</p>
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="deckSearchInput" class="search-input" placeholder="Search all your sets by name…">
+          <button type="button" class="search-clear hidden" id="searchClearBtn" title="Clear search">✕</button>
+        </div>
         <div class="landing-actions">
           <button class="btn-primary" id="newSetBtn">+ New set</button>
           <button class="btn-ghost" id="trySampleBtn">Try the sample deck</button>
         </div>
-        <input type="text" id="deckSearchInput" class="search-input" placeholder="🔍 Search all your sets by name…">
         <div id="searchResults" class="hidden"></div>
         <div id="folderGridWrap">
           <label class="field-label">Folders</label>
+          <p class="landing-intro">Filed automatically by Subject — saved right on this device.</p>
           <div class="folder-grid" id="folderGrid"></div>
         </div>
       </div>
@@ -1337,15 +1382,6 @@ OUTCOME: NEG
           <button class="btn-ghost" id="backToSetupBtn">← Back</button>
           <button class="btn-ghost" id="resetStatsBtn" style="color:var(--red);border-color:var(--red-bg);">Reset all stats</button>
         </div>
-        <div class="backup-block">
-          <label class="field-label">Backup &amp; restore</label>
-          <div class="hint" style="margin-top:0;">Everything lives only in this browser. Download a backup file now and then to keep your sets and stats safe, or move them to another device.</div>
-          <div class="row">
-            <button class="btn-ghost" id="exportDataBtn">⬇ Export backup</button>
-            <button class="btn-ghost" id="importDataBtn">⬆ Import backup</button>
-            <input type="file" id="importDataFile" accept="application/json" class="hidden">
-          </div>
-        </div>
       </div>
 
       <!-- SETTINGS -->
@@ -1388,6 +1424,16 @@ OUTCOME: NEG
           <div class="row" style="margin-top:16px;">
             <button class="btn-primary" id="imgSettingsSave">Save</button>
             <span id="imgSettingsSavedNote" class="hidden" style="font-size:12.5px; color:var(--green); font-weight:600;">Saved ✓</span>
+          </div>
+        </div>
+
+        <div class="backup-block">
+          <label class="field-label">Backup &amp; restore</label>
+          <div class="hint" style="margin-top:0;">Everything lives only in this browser. Download a backup file now and then to keep your sets and stats safe, or move them to another device.</div>
+          <div class="row">
+            <button class="btn-ghost" id="exportDataBtn">⬇ Export backup</button>
+            <button class="btn-ghost" id="importDataBtn">⬆ Import backup</button>
+            <input type="file" id="importDataFile" accept="application/json" class="hidden">
           </div>
         </div>
 
@@ -1568,6 +1614,7 @@ function showLanding(){
   currentFolderId = null;
   $('deckSearchInput').value = '';
   $('searchResults').classList.add('hidden');
+  $('searchClearBtn').classList.add('hidden');
   $('folderGridWrap').classList.remove('hidden');
   renderLanding();
   checkForResumableSession();
@@ -1762,7 +1809,8 @@ function buildSetRow(sid, s, opts){
   }
   const progressBadge = (inProgress && !isCase)
     ? `<div class="set-item-progress">Paused · card ${session.askedCount || 1} · mastered ${session.masteredCount || 0}/${session.totalCards || session.cards.length}</div>`
-    : (caseSaved ? `<div class="set-item-progress">Paused · score ${caseSaved.score || 0}</div>` : '');
+    : (caseSaved ? `<div class="set-item-progress">Paused · score ${caseSaved.score || 0}</div>`
+    : ((!isCase && s.completed) ? `<div class="set-item-progress done">✓ Done · ${fmtDate(s.completedAt)}</div>` : ''));
   row.innerHTML = `
     <div class="set-item-main">
       <div class="set-item-name">${isCase ? '🩺 ' : ''}${escapeHtml(s.name)}</div>
@@ -1773,6 +1821,7 @@ function buildSetRow(sid, s, opts){
     <div class="set-item-actions">
       ${isCase ? `<button class="btn-primary sm" data-act="play" data-id="${sid}">${caseSaved ? '▶ Continue case' : '▶ Play case'}</button>` : ''}
       ${(inProgress && !isCase) ? `<button class="btn-primary sm" data-act="continue" data-id="${sid}">Continue →</button>` : ''}
+      ${(!inProgress && !isCase && s.completed) ? `<button class="btn-primary sm" data-act="review" data-id="${sid}">▶ Play again</button>` : ''}
       <button class="btn-ghost sm" data-act="load" data-id="${sid}">${isCase ? 'Edit' : 'Load'}</button>
       <button class="btn-ghost sm icon-only" data-act="rename" data-id="${sid}" title="Rename">✎</button>
       <button class="btn-ghost sm icon-only" data-act="dup" data-id="${sid}" title="Duplicate">⧉</button>
@@ -1785,6 +1834,11 @@ function buildSetRow(sid, s, opts){
     if(!result.ok) alert(result.message);
   });
   row.querySelector('[data-act="continue"]')?.addEventListener('click', () => { setupReturnTo = opts.returnTo !== undefined ? opts.returnTo : currentFolderId; resumeSession(sid); });
+  row.querySelector('[data-act="review"]')?.addEventListener('click', () => {
+    setupReturnTo = opts.returnTo !== undefined ? opts.returnTo : currentFolderId;
+    setInputMode(s.mode || 'classic');
+    launchQuiz(JSON.parse(JSON.stringify(s.cards)), sid);
+  });
   row.querySelector('[data-act="load"]').addEventListener('click', () => { setupReturnTo = opts.returnTo !== undefined ? opts.returnTo : currentFolderId; loadSetById(sid); });
   row.querySelector('[data-act="rename"]').addEventListener('click', () => renameSetById(sid));
   row.querySelector('[data-act="dup"]').addEventListener('click', () => duplicateSetById(sid));
@@ -1868,6 +1922,7 @@ function renderFolderView(){
 function renderSearchResults(query){
   const box = $('searchResults');
   const q = query.trim().toLowerCase();
+  $('searchClearBtn').classList.toggle('hidden', !query);
   if(!q){
     box.classList.add('hidden');
     box.innerHTML = '';
@@ -2003,7 +2058,15 @@ function recordSession(){
   saveStatsData(statsAll);
   if(activeSetId){
     const sets = loadSets();
-    if(sets[activeSetId]){ sets[activeSetId].updatedAt = Date.now(); saveSetsData(sets); }
+    if(sets[activeSetId]){
+      sets[activeSetId].updatedAt = Date.now();
+      // A finished quiz always means every card was answered correctly at
+      // least once (missed cards get requeued instead of ending the run),
+      // so reaching finishQuiz() is a full mastery pass — mark it done.
+      sets[activeSetId].completed = true;
+      sets[activeSetId].completedAt = Date.now();
+      saveSetsData(sets);
+    }
   }
 }
 
@@ -2143,6 +2206,16 @@ function resetPalette(){
   const root = document.documentElement.style;
   ['--tile-blue-deep','--tile-blue','--tile-blue-mid','--tile-blue-pale','--tile-blue-paler','--ink','--ink-soft']
     .forEach(v => root.removeProperty(v));
+}
+
+// Was being called everywhere but never defined, so every call threw
+// silently (swallowed by nearby try/catch blocks) and the slider's own
+// oninput handler had no try/catch, so it threw before it could even
+// update the "Xpx" label or save the value — the blur never actually changed.
+function applyBgBlur(px){
+  const n = Math.max(0, Math.min(30, parseInt(px, 10) || 0));
+  const layer = $('bgLayer');
+  if(layer) layer.style.filter = `blur(${n}px) brightness(.82) saturate(1.15)`;
 }
 
 function applyBackgroundImage(dataUrl){
@@ -3465,6 +3538,11 @@ $('trySampleBtn').onclick = () => {
   showSetupScreen();
 };
 $('deckSearchInput').oninput = e => renderSearchResults(e.target.value);
+$('searchClearBtn').onclick = () => {
+  $('deckSearchInput').value = '';
+  renderSearchResults('');
+  $('deckSearchInput').focus();
+};
 
 $('folderBackBtn').onclick = () => showLanding();
 $('newSetInFolderBtn').onclick = () => {
@@ -3867,6 +3945,14 @@ $('startBtn').onclick = () => {
 function launchQuiz(cardArr, setId){
   cards = cardArr;
   activeSetId = setId;
+  // Starting a fresh run means it's no longer "done" until it's finished again.
+  if(setId){
+    const sets = loadSets();
+    if(sets[setId] && sets[setId].completed){
+      sets[setId].completed = false;
+      saveSetsData(sets);
+    }
+  }
   totalCards = cards.length;
   buildSimilarityIndex(cards);
   queue = orderedQueue(cards);
