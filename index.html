@@ -507,34 +507,6 @@ overflow-wrap:break-word;
 
   .hidden{display:none !important;}
 
-  .resume-banner{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:12px;
-    flex-wrap:wrap;
-    background:var(--tile-blue-paler);
-    border:none;
-    border-radius:16px;
-    padding:16px 20px;
-    margin-bottom:24px;
-  }
-  .resume-info{display:flex; flex-direction:column; gap:2px;}
-  .resume-title{
-    font-family:var(--font);
-    font-weight:700;
-    font-size:13.5px;
-    color:var(--tile-blue-deep);
-  }
-  .resume-sub{
-    font-family:var(--font);
-    font-weight:600;
-    font-size:12px;
-    color:var(--ink-soft);
-  }
-  .resume-actions{display:flex; gap:8px;}
-  .resume-actions button{padding:9px 16px; font-size:13px;}
-
   /* --- Vine border --- */
   .vine-frame{
     position:absolute;
@@ -1037,14 +1009,21 @@ body.dark-mode .zoom-controls button:hover{
 }
 .recent-item{
   display:flex;
+  align-items:center;
+  gap:2px;
+  width:100%;
+  border-bottom:1px solid var(--tile-blue-paler);
+}
+.recent-item:last-child{border-bottom:none;}
+.recent-item-btn{
+  display:flex;
   min-width:0;
   max-width:100%;
   align-items:center;
   gap:14px;
-  width:100%;
+  flex:1;
   background:none;
   border:none;
-  border-bottom:1px solid var(--tile-blue-paler);
   border-radius:10px;
   padding:12px 6px;
   cursor:pointer;
@@ -1052,8 +1031,24 @@ body.dark-mode .zoom-controls button:hover{
   font-family:var(--font);
   transition:background .12s ease;
 }
-.recent-item:last-child{border-bottom:none;}
-.recent-item:hover{background:var(--tile-blue-paler);}
+.recent-item-btn:hover{background:var(--tile-blue-paler);}
+.recent-item-btn:hover .recent-item-icon{background:#fff;}
+.recent-item-discard{
+  flex-shrink:0;
+  width:28px;
+  height:28px;
+  border-radius:50%;
+  border:none;
+  background:none;
+  color:var(--ink-soft);
+  font-size:13px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:background .12s ease, color .12s ease;
+}
+.recent-item-discard:hover{background:var(--tile-blue-paler); color:var(--ink);}
 .recent-item-icon{
   flex-shrink:0;
   width:36px; height:36px;
@@ -1062,7 +1057,6 @@ body.dark-mode .zoom-controls button:hover{
   display:flex; align-items:center; justify-content:center;
   font-size:16px;
 }
-.recent-item:hover .recent-item-icon{background:#fff;}
 .recent-item-main{
   flex:1;
   min-width:0;
@@ -1270,16 +1264,6 @@ body.dark-mode .zoom-controls button:hover{
 
       <!-- LANDING -->
       <div id="landing">
-        <div class="resume-banner hidden" id="resumeBanner">
-          <div class="resume-info">
-            <span class="resume-title">Quiz in progress</span>
-            <span class="resume-sub" id="resumeText"></span>
-          </div>
-          <div class="resume-actions">
-            <button class="btn-primary" id="resumeBtn">Resume →</button>
-            <button class="btn-ghost" id="discardResumeBtn">Discard</button>
-          </div>
-        </div>
         <div class="landing-toolbar">
           <div class="search-wrap">
             <span class="search-icon">🔍</span>
@@ -1841,7 +1825,6 @@ function showLanding(){
   $('landingColumns').classList.remove('hidden');
   renderLanding();
   renderRecentActivity();
-  checkForResumableSession();
 }
 function showFolder(id){
   hideAllScreens();
@@ -2132,6 +2115,22 @@ function getRecentActivity(limit){
     }
     if(updatedAt) items.push({sid, s, isCase, updatedAt, status});
   });
+
+  // An in-progress quiz that was never saved as a named set used to get
+  // its own "Quiz in progress" banner above this list; it's folded in here
+  // now as a regular entry (flagged isScratch so it can offer Discard).
+  const scratchSess = allSessions[SCRATCH_ID];
+  if(scratchSess && scratchSess.current && Array.isArray(scratchSess.cards) && scratchSess.cards.length && scratchSess.updatedAt){
+    items.push({
+      sid: SCRATCH_ID,
+      s: {name:'Untitled quiz', cards: scratchSess.cards, subject: null},
+      isCase: false,
+      isScratch: true,
+      updatedAt: scratchSess.updatedAt,
+      status: {type:'quiz', asked: scratchSess.askedCount || 1, total: scratchSess.totalCards || scratchSess.cards.length, mastered: scratchSess.masteredCount || 0}
+    });
+  }
+
   items.sort((a, b) => b.updatedAt - a.updatedAt);
   return typeof limit === 'number' ? items.slice(0, limit) : items;
 }
@@ -2151,28 +2150,38 @@ function renderRecentActivity(){
   wrap.classList.remove('hidden');
   if(cols) cols.classList.remove('no-recent');
   items.forEach(item => {
-    const {s, isCase, status} = item;
+    const {s, isCase, status, isScratch} = item;
     const subjectPrefix = s.subject ? `${escapeHtml(s.subject)} · ` : '';
     let metaStr = `${s.cards.length} cards`;
     if(status.type === 'quiz') metaStr = `Card ${status.asked} of ${status.total}`;
     else if(status.type === 'case') metaStr = `Score ${status.score}`;
     else if(status.type === 'completed') metaStr = `Completed · ${fmtDate(s.completedAt)}`;
-    const row = document.createElement('button');
-    row.type = 'button';
+    const row = document.createElement('div');
     row.className = 'recent-item';
     row.innerHTML = `
-      <span class="recent-item-icon">${isCase ? '🩺' : '📘'}</span>
-      <span class="recent-item-main">
-        <span class="recent-item-name">${escapeHtml(s.name)}</span>
-        <span class="recent-item-meta">${subjectPrefix}${metaStr}</span>
-      </span>
-      <span class="recent-item-side">
-        <span class="recent-item-time">${fmtRelative(item.updatedAt)}</span>
-        <span class="recent-item-cta">Continue →</span>
-      </span>`;
-    row.addEventListener('click', () => continueRecentItem(item));
+      <button type="button" class="recent-item-btn">
+        <span class="recent-item-icon">${isCase ? '🩺' : '📘'}</span>
+        <span class="recent-item-main">
+          <span class="recent-item-name">${escapeHtml(s.name)}</span>
+          <span class="recent-item-meta">${subjectPrefix}${metaStr}</span>
+        </span>
+        <span class="recent-item-side">
+          <span class="recent-item-time">${fmtRelative(item.updatedAt)}</span>
+          <span class="recent-item-cta">Continue →</span>
+        </span>
+      </button>${isScratch ? `<button type="button" class="recent-item-discard" title="Discard this quiz">✕</button>` : ''}`;
+    row.querySelector('.recent-item-btn').addEventListener('click', () => continueRecentItem(item));
+    row.querySelector('.recent-item-discard')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      discardRecentItem(item);
+    });
     list.appendChild(row);
   });
+}
+
+function discardRecentItem(item){
+  clearSession(item.sid);
+  renderRecentActivity();
 }
 
 function continueRecentItem(item){
@@ -4282,7 +4291,7 @@ $('breakContinueBtn').onclick = () => {
 $('quitFromBreakBtn').onclick = () => {
   saveSession({onBreak: true});
   showSetupScreen();
-  checkForResumableSession();
+  renderRecentActivity();
 };
 
 $('startBtn').onclick = () => {
@@ -4585,7 +4594,6 @@ function resumeSession(id){
 
   hideAllScreens();
   renderPlant(masteredCount / totalCards);
-  $('resumeBanner').classList.add('hidden');
 
   if(s.onBreak){
     $('brainBreakStats').textContent = `Mastered ${masteredCount} / ${totalCards} so far · ${queue.length} card${queue.length === 1 ? '' : 's'} left`;
@@ -4604,34 +4612,19 @@ function resumeSession(id){
   }
 }
 
-// The landing banner only ever covers the scratch bucket (a quiz that
-// hasn't been saved as a named set) — a saved set's in-progress quiz gets
-// its own "Continue" button on its row inside its folder instead, so
-// several decks can each be paused and resumed independently.
-function checkForResumableSession(){
-  const s = loadSession(SCRATCH_ID);
-  const banner = $('resumeBanner');
-  if(!banner) return;
-  if(s && s.current && Array.isArray(s.cards) && s.cards.length){
-    $('resumeText').textContent = `Card ${s.askedCount || 1} · Mastered ${s.masteredCount || 0} / ${s.totalCards || s.cards.length}`;
-    banner.classList.remove('hidden');
-  } else {
-    banner.classList.add('hidden');
-  }
-}
-$('resumeBtn').onclick = () => resumeSession(SCRATCH_ID);
-$('discardResumeBtn').onclick = () => {
-  clearSession(SCRATCH_ID);
-  $('resumeBanner').classList.add('hidden');
-};
-checkForResumableSession();
+// An unsaved quiz's in-progress state now surfaces as a regular entry in
+// "Continue studying" (see getRecentActivity's isScratch item) instead of
+// a separate banner — a saved set's in-progress quiz still gets its own
+// "Continue" button on its row inside its folder, so several decks can
+// each be paused and resumed independently.
+renderRecentActivity();
 
 $('nextBtn').onclick = () => nextFromQueue();
 
 $('quitBtn').onclick = () => {
   saveSession();
   showSetupScreen();
-  checkForResumableSession();
+  renderRecentActivity();
 };
 
 function finishQuiz(){
