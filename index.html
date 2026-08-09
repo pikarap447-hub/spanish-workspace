@@ -49,14 +49,21 @@ justify-content:center;
 padding:36px clamp(16px, 4vw, 48px) 116px;
 }
   .frame{width:100%; max-width:680px;}
-  .frame.wide{max-width:1020px; flex:1 1 auto; min-width:0;}
+  .frame.wide{max-width:1020px; min-width:0; justify-self:center; width:100%;}
 
   /* ---- App shell: desktop shows a left rail (nav + botanical touches,
      matching the reference layout); phones fall back to the original
      compact top nav row so nothing cramps at small widths. ---- */
   .app-shell{
     display:grid;
-    grid-template-columns:190px minmax(0, 1020px) 190px;
+    /* Middle track used to be a fixed minmax(0,1020px) — a non-flexible
+       track never claims leftover space in CSS Grid (only fr/auto tracks
+       do), so the card never actually grew to fill the screen even though
+       the app-shell itself was width:100%. 1fr makes it a real flexible
+       track; .frame.wide's own max-width:1020px still caps how big the
+       card gets, and justify-self:center (below) keeps it centered once
+       it hits that cap instead of hugging the left edge of the track. */
+    grid-template-columns:190px minmax(0, 1fr) 190px;
     align-items:start;
     gap:34px;
     width:100%;
