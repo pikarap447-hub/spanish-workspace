@@ -47,6 +47,7 @@ color:var(--ink);
 display:flex;
 justify-content:center;
 padding:36px clamp(16px, 4vw, 48px) 116px;
+overflow-x:auto;
 }
   .frame{width:100%; max-width:680px;}
   .frame.wide{max-width:1020px; min-width:0; justify-self:center; width:100%;}
@@ -4692,8 +4693,15 @@ $('editBtn').onclick = () => {
 
 /* ---- Keyboard shortcuts during the quiz: 1-4 / A-D / U-P to pick, Enter/Space for next ---- */
 document.addEventListener('keydown', e => {
-  if($('quiz').classList.contains('hidden')) return;
   if(e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+  if(!$('brainBreak').classList.contains('hidden')){
+    if(e.key === 'Enter' || e.key === ' '){
+      const btn = $('breakContinueBtn');
+      if(btn){ e.preventDefault(); btn.click(); }
+    }
+    return;
+  }
+  if($('quiz').classList.contains('hidden')) return;
   if(!answered){
     // U/I/O/P sit together on the home row's top edge — much easier to hit
     // without looking than 1-4 or A-D, which is why they're offered as an
@@ -4730,15 +4738,12 @@ document.addEventListener('DOMContentLoaded',function(){
  let scale=parseFloat(lsGet('topicReviewScale')||'1');
  function apply(){
    document.querySelector('.app-shell').style.transform='scale('+scale+')';
-   // Anchor point depends on direction:
-   // - Zoomed IN (scale>1): anchor top-left so the extra size only grows
-   //   off to the right/bottom (normal, scrollable overflow) instead of
-   //   splitting evenly on both sides of center, which Chrome/Safari won't
-   //   let you scroll into.
-   // - At 100% or zoomed OUT (scale<=1): anchor top-center as before, so
-   //   the page stays visually centered instead of shrinking toward the
-   //   top-left corner and leaving dead space on the right/bottom.
-   document.querySelector('.app-shell').style.transformOrigin = scale > 1 ? 'top left' : 'top center';
+   // Always anchor from top-center so zooming visually grows/shrinks from
+   // the middle of the page, as expected. Reachability of any overflow
+   // when zoomed in past 100% is handled separately by body's explicit
+   // overflow-x:auto, which lets you scroll to either side of centered
+   // overflow — Chrome/Safari won't do that automatically without it.
+   document.querySelector('.app-shell').style.transformOrigin='top center';
    // Reserve enough room for the fixed zoom/dark-mode/fullscreen toolbar
    // (its own height + bottom offset) so page content never sits under it,
    // instead of the old flat 60px which was too small once the toolbar's
