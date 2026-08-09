@@ -155,6 +155,42 @@ overflow-wrap:break-word;
     resize:vertical;
   }
   textarea:focus{outline:2px solid var(--tile-blue-mid); outline-offset:1px;}
+  .card-edit-panel{
+    margin:14px 0 4px;
+    padding:16px;
+    border:1.5px solid var(--tile-blue-pale);
+    border-radius:18px;
+    background:#FBF7EC;
+  }
+  .edit-textarea{ min-height:unset; }
+  .edit-option-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:8px;
+  }
+  .edit-option-letter{
+    flex:0 0 auto;
+    width:30px; height:30px;
+    border-radius:50%;
+    border:1.5px solid var(--tile-blue-pale);
+    background:#fff;
+    font-family:var(--font-mono);
+    font-weight:700;
+    font-size:12px;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--ink-soft);
+  }
+  .edit-option-letter.correct{
+    background:var(--ink);
+    border-color:var(--ink);
+    color:#fff;
+  }
+  .edit-option-row textarea{
+    min-height:unset;
+    flex:1;
+  }
   label.field-label{
     display:block;
     font-family:var(--font-mono);
@@ -298,6 +334,24 @@ overflow-wrap:break-word;
   .progress-track{
     height:6px; background:var(--tile-blue-paler); border-radius:3px; overflow:hidden; margin-bottom:22px;
   }
+  .brain-break-countdown{
+    position:fixed; left:18px; bottom:18px; z-index:99999;
+    display:flex; align-items:center; gap:8px; width:fit-content;
+    font-family:var(--font); font-weight:600; font-size:13px;
+    color:var(--ink); background:rgba(255,255,255,.95);
+    border:1px solid #d7e2f5; border-radius:999px; padding:6px 12px;
+    box-shadow:0 6px 18px rgba(0,0,0,.15);
+  }
+  .brain-break-countdown .bb-step{
+    width:20px; height:20px; line-height:18px; text-align:center;
+    border:1px solid var(--ink); border-radius:50%; cursor:pointer;
+    font-family:var(--font); font-size:13px; font-weight:700; background:#fff;
+  }
+  .brain-break-countdown .bb-step:hover{ background:var(--ink); color:#fff; }
+  body.dark-mode .brain-break-countdown{
+    background:rgba(30,30,35,.95); border-color:#3a3a42; color:#e8e8f0;
+  }
+  body.dark-mode .brain-break-countdown .bb-step{ background:#2a2a32; border-color:#e8e8f0; }
   .progress-fill{height:100%; background:var(--green);}
 
   .index-no{
@@ -313,14 +367,24 @@ overflow-wrap:break-word;
     justify-content:space-between;
     margin-bottom:6px;
   }
+  .card-icon-actions{
+    display:flex;
+    align-items:center;
+    gap:2px;
+  }
   .flag-btn{
     background:transparent;
     border:none;
     cursor:pointer;
     font-size:15px;
     line-height:1;
-    padding:2px 4px;
-    opacity:.35;
+    padding:8px;
+    min-width:36px;
+    min-height:36px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    opacity:.55;
     filter:grayscale(1);
     transition:opacity .15s ease, filter .15s ease;
   }
@@ -1495,10 +1559,26 @@ OUTCOME: NEG
 
         <div class="index-no-row">
           <div class="index-no" id="indexNo">CARD 001</div>
-          <button type="button" class="flag-btn" id="flagBtn" title="Mark for review">🏳️</button>
+          <div class="card-icon-actions">
+            <button type="button" class="flag-btn" id="editCardBtn" title="Edit this card">✏️</button>
+            <button type="button" class="flag-btn" id="flagBtn" title="Mark for review">🏳️</button>
+          </div>
         </div>
         <div class="question" id="questionText"></div>
         <div class="options" id="optionsList"></div>
+
+        <div class="card-edit-panel hidden" id="cardEditPanel">
+          <label class="field-label">Question</label>
+          <textarea id="editFront" class="edit-textarea" rows="2"></textarea>
+          <label class="field-label" style="margin-top:10px;">Answer choices — tap a letter to mark the correct one</label>
+          <div id="editOptionsList"></div>
+          <label class="field-label" style="margin-top:10px;">Exam tip</label>
+          <textarea id="editTip" class="edit-textarea" rows="3"></textarea>
+          <div class="footer-row" style="margin-top:14px;">
+            <button class="btn-ghost" id="cancelCardEditBtn">Cancel</button>
+            <button class="btn-primary" id="saveCardEditBtn">Save changes</button>
+          </div>
+        </div>
 
         <div class="tip-box" id="tipBox">
           <span class="tip-label">Exam tip</span>
@@ -1815,6 +1895,7 @@ function hideAllScreens(){
     const el = $(id);
     if(el) el.classList.add('hidden');
   });
+  renderBrainBreakCountdown();
 }
 function showLanding(){
   hideAllScreens();
@@ -4449,6 +4530,118 @@ function nextFromQueue(){
   advanceToNextCard();
 }
 
+function renderBrainBreakCountdown(){
+  const el = $('brainBreakCountdown');
+  if(!el) return;
+  const quizVisible = $('quiz') && !$('quiz').classList.contains('hidden');
+  if(!quizVisible || !brainBreakEnabled){ el.classList.add('hidden'); el.innerHTML=''; return; }
+  el.classList.remove('hidden');
+  const remaining = Math.max(0, brainBreakInterval - cardsSinceBreak);
+  el.innerHTML = `<span class="bb-step" id="bbDec" title="Fewer cards until break">−</span>`
+    + `<span>Break in ${remaining} card${remaining === 1 ? '' : 's'} (every ${brainBreakInterval})</span>`
+    + `<span class="bb-step" id="bbInc" title="More cards until break">+</span>`;
+  $('bbDec').onclick = e => { e.stopPropagation(); adjustBrainBreakInterval(-1); };
+  $('bbInc').onclick = e => { e.stopPropagation(); adjustBrainBreakInterval(1); };
+}
+function adjustBrainBreakInterval(delta){
+  const next = Math.min(50, Math.max(2, brainBreakInterval + delta));
+  if(next === brainBreakInterval) return;
+  brainBreakInterval = next;
+  try{ lsSet(BRAINBREAK_INTERVAL_KEY, String(brainBreakInterval)); }catch(e){}
+  const settingsInput = $('brainBreakInterval');
+  if(settingsInput) settingsInput.value = brainBreakInterval;
+  updateBrainBreakUI();
+  renderBrainBreakCountdown();
+}
+
+const EDIT_LETTERS = ['A','B','C','D','E','F'];
+let editCorrectIndex = 0;
+
+function openCardEditor(){
+  $('editFront').value = current.front || '';
+  $('editTip').value = current.tip || '';
+
+  // Edit whatever's currently on screen (currentOptions), so what you see
+  // is what you correct — not just the raw stored answer.
+  const opts = (currentOptions && currentOptions.length) ? currentOptions.slice() : [current.back || ''];
+  editCorrectIndex = Math.max(0, opts.findIndex(o => (o || '').toLowerCase() === (current.back || '').toLowerCase()));
+  renderEditOptions(opts);
+
+  $('cardEditPanel').classList.remove('hidden');
+  $('questionText').classList.add('hidden');
+  $('optionsList').classList.add('hidden');
+  $('tipBox').style.display = 'none';
+}
+function renderEditOptions(opts){
+  const list = $('editOptionsList');
+  list.innerHTML = '';
+  opts.forEach((opt, i) => {
+    const row = document.createElement('div');
+    row.className = 'edit-option-row';
+    const letterBtn = document.createElement('button');
+    letterBtn.type = 'button';
+    letterBtn.className = 'edit-option-letter' + (i === editCorrectIndex ? ' correct' : '');
+    letterBtn.textContent = EDIT_LETTERS[i] || '?';
+    letterBtn.title = 'Mark as the correct answer';
+    letterBtn.onclick = () => {
+      editCorrectIndex = i;
+      list.querySelectorAll('.edit-option-letter').forEach((b, bi) => b.classList.toggle('correct', bi === i));
+    };
+    const ta = document.createElement('textarea');
+    ta.rows = 1;
+    ta.value = opt;
+    row.appendChild(letterBtn);
+    row.appendChild(ta);
+    list.appendChild(row);
+  });
+}
+function closeCardEditor(){
+  $('cardEditPanel').classList.add('hidden');
+  $('questionText').classList.remove('hidden');
+  $('optionsList').classList.remove('hidden');
+}
+$('editCardBtn').onclick = openCardEditor;
+$('cancelCardEditBtn').onclick = closeCardEditor;
+$('saveCardEditBtn').onclick = () => {
+  const originalFront = current.front;
+  const newFront = $('editFront').value.trim();
+  const newTip = $('editTip').value;
+  const optionTextareas = Array.from($('editOptionsList').querySelectorAll('textarea'));
+  const newOptions = optionTextareas.map(ta => ta.value.trim()).filter(Boolean);
+  if(!newFront || newOptions.length < 2){ alert("Question needs text, and at least 2 answer choices."); return; }
+  const correctIdx = Math.min(editCorrectIndex, newOptions.length - 1);
+  const newBack = newOptions[correctIdx];
+
+  current.front = newFront;
+  current.back = newBack;
+  current.tip = newTip;
+  current.options = newOptions;
+  current.mode = 'full'; // now hand-authored — stop regenerating distractors for this card
+
+  // The in-memory quiz session runs on a deep-cloned copy of the set's
+  // cards (see launchQuiz), so an edit here doesn't touch the saved set
+  // on disk automatically — look the card up by its original question
+  // text and write the change back so it sticks for future sessions too.
+  if(activeSetId){
+    const setsData = loadSets();
+    const s = setsData[activeSetId];
+    if(s && Array.isArray(s.cards)){
+      const idx = s.cards.findIndex(c => c.front === originalFront);
+      if(idx !== -1){
+        s.cards[idx].front = newFront;
+        s.cards[idx].back = newBack;
+        s.cards[idx].tip = newTip;
+        s.cards[idx].options = newOptions;
+        s.cards[idx].mode = 'full';
+        saveSetsData(setsData);
+      }
+    }
+  }
+  closeCardEditor();
+  showCard(); // re-render with the edited question/answer/tip, and rebuild
+              // the answer options so they stay in sync with the new answer
+};
+
 function showCard(restoreOptions){
   answered = false;
   const card = current;
@@ -4462,6 +4655,7 @@ function showCard(restoreOptions){
   };
   $('progressText').textContent = `Mastered ${masteredCount} / ${totalCards}`;
   $('scoreText').textContent = `Score ${score}`;
+  renderBrainBreakCountdown();
   $('progressFill').style.width = (masteredCount / totalCards * 100) + '%';
   $('questionText').textContent = card.front;
   $('tipBox').style.display = 'none';
@@ -4723,6 +4917,8 @@ document.addEventListener('keydown', e => {
   }
 });
 </script>
+
+<span id="brainBreakCountdown" class="brain-break-countdown hidden"></span>
 
 <div class="zoom-controls">
 <button type="button" id="zoomOut" title="Smaller text">A−</button>
