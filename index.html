@@ -10,9 +10,9 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
 
-  /* ---- Study-garden palette: the vine/grape growth metaphor (already
-     present in the quiz's "+1 🍇" and vine border) is promoted here to be
-     the app's actual brand system, instead of living only in decoration
+  /* ---- Study-garden palette: the vine growth metaphor (still present
+     in the vine border around the card) is promoted here to be the
+     app's actual brand system, instead of living only in decoration
      while an unrelated indigo ran the real UI. Variable names are kept as
      tile-blue-* so every existing call site cascades to the new palette
      without needing to touch each usage individually. ---- */
@@ -31,6 +31,7 @@
     --red:#B5493E;
     --red-bg:#F4DEDA;
     --grape:#7A4E9E;
+    --card-alpha:1;
     --font:'Quicksand', sans-serif;
     --font-display:'Quicksand', sans-serif;
     --font-mono:'Quicksand', sans-serif;
@@ -45,25 +46,71 @@ font-family:var(--font);
 color:var(--ink);
 display:flex;
 justify-content:center;
-padding:32px 16px 116px;
+padding:36px clamp(16px, 4vw, 48px) 116px;
 }
   .frame{width:100%; max-width:680px;}
+  .frame.wide{max-width:1020px; flex:1 1 auto; min-width:0;}
+
+  /* ---- App shell: desktop shows a left rail (nav + botanical touches,
+     matching the reference layout); phones fall back to the original
+     compact top nav row so nothing cramps at small widths. ---- */
+  .app-shell{
+    display:grid;
+    grid-template-columns:190px minmax(0, 1020px) 190px;
+    align-items:start;
+    gap:34px;
+    width:100%;
+    justify-content:center;
+  }
+  .app-shell::after{content:''; grid-column:3;} /* mirrors the sidebar's width so the frame lands dead-center */
+  .sidebar{
+    grid-column:1;
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+    width:190px;
+    padding-top:6px;
+  }
+  .frame.wide{grid-column:2;}
+  .sidebar-nav{display:flex; flex-direction:column; gap:8px;}
+  .sidebar-nav .stats-toggle{
+    width:100%;
+    justify-content:flex-start;
+    text-align:left;
+    border-radius:12px;
+    padding:10px 14px !important;
+    font-size:13px !important;
+  }
+  @media (max-width:899px){
+    .app-shell{display:flex; flex-direction:column; align-items:center;}
+    .app-shell::after{display:none;}
+    .sidebar{
+      display:flex;
+      flex-direction:row;
+      flex-wrap:wrap;
+      justify-content:center;
+      width:100%;
+      gap:6px;
+      padding-top:0;
+      margin-bottom:18px;
+    }
+    .sidebar-nav{flex-direction:row; flex-wrap:wrap; justify-content:center; width:100%; gap:6px;}
+    .sidebar-nav .stats-toggle{width:auto;}
+  }
 
   .header{
     display:flex;
     flex-direction:column;
     align-items:center;
     gap:6px;
-    margin-bottom:20px;
+    margin-bottom:28px;
   }
   .header-title{
     text-align:center;
     max-width:100%;
     padding:10px 22px 12px;
-    border-radius:4px 4px 14px 14px;
+    border-radius:14px;
     background:#FFFDF6;
-    box-shadow:0 4px 14px rgba(44,90,66,.1);
-    border-bottom:3px solid var(--tile-blue-deep);
     position:relative;
   }
   .header .eyebrow{
@@ -89,14 +136,14 @@ overflow-wrap:break-word;
 .tile-border.bottom{display:none;}
 
   .card{
-    background:#ffffff;
+    background:rgba(255,255,255,var(--card-alpha));
     color:var(--ink);
-    box-shadow:0 8px 24px rgba(0,0,0,.08);
+    box-shadow:0 8px 28px rgba(0,0,0,.07);
     position:relative;
-    border-radius:22px;
+    border-radius:26px;
     overflow:hidden;
   }
-  .card-inner{padding:30px 32px 28px; position:relative; z-index:1;}
+  .card-inner{padding:40px 44px 36px; position:relative; z-index:1;}
 
   textarea{
     width:100%;
@@ -472,10 +519,10 @@ overflow-wrap:break-word;
     gap:12px;
     flex-wrap:wrap;
     background:var(--tile-blue-paler);
-    border:1.5px solid var(--tile-blue-pale);
-    border-radius:14px;
-    padding:14px 16px;
-    margin-bottom:18px;
+    border:none;
+    border-radius:16px;
+    padding:16px 20px;
+    margin-bottom:24px;
   }
   .resume-info{display:flex; flex-direction:column; gap:2px;}
   .resume-title{
@@ -669,23 +716,23 @@ font-size:16px;
 body.dark-mode{
   background:#121215; /* Softer than pure black */
 }
-body.dark-mode .frame{
+body.dark-mode .app-shell{
   filter:invert(0.92) hue-rotate(180deg) brightness(1.05) contrast(0.9);
 }
-body.dark-mode .frame img,
-body.dark-mode .frame svg,
-body.dark-mode .frame video{
+body.dark-mode .app-shell img,
+body.dark-mode .app-shell svg,
+body.dark-mode .app-shell video{
   /* Reverse the filter exactly so images/videos look normal */
   filter:invert(0.92) hue-rotate(180deg) brightness(1.05) contrast(0.9);
 }
-body.dark-mode .frame .case-avatar-doctor::after,
-body.dark-mode .frame .case-avatar-patient-male::after,
-body.dark-mode .frame .case-avatar-patient-female::after{
-  /* These are real photos painted as CSS background-images (not <img>
-     tags), so the img/svg/video counter-invert above never touched
-     them and they came out looking like photo negatives. Reverse the
-     filter on the photo layer only, leaving the avatar's circle
-     border/background free to invert normally with the rest of the UI. */
+body.dark-mode .app-shell .case-avatar-doctor::after,
+body.dark-mode .app-shell .case-avatar-patient-male::after,
+body.dark-mode .app-shell .case-avatar-patient-female::after,
+body.dark-mode .app-shell .plus-float{
+  /* These are real photos (CSS background-images) rendered as plain
+     text, so the img/svg/video counter-invert above never touched
+     them. Reverse the filter on just these so they read normally,
+     same trick as the avatar photos above. */
   filter:invert(0.92) hue-rotate(180deg) brightness(1.05) contrast(0.9);
 }
 body.dark-mode .zoom-controls{
@@ -838,14 +885,16 @@ body.dark-mode .zoom-controls button:hover{
   width:100%;
   font-family:var(--font);
   font-size:14px;
-  padding:12px 40px;
-  border:1.5px solid var(--tile-blue-pale);
+  padding:13px 42px;
+  border:1.5px solid transparent;
   border-radius:14px;
   background:#fff;
   color:var(--ink);
+  box-shadow:0 2px 8px rgba(44,90,66,.06);
 }
 .search-input:focus{outline:2px solid var(--tile-blue-mid); outline-offset:1px;}
-.search-wrap{position:relative; margin-bottom:14px;}
+.landing-toolbar{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:20px; width:100%;}
+.search-wrap{position:relative; flex:1 1 auto; min-width:150px;}
 .search-icon{
   position:absolute; left:14px; top:50%; transform:translateY(-50%);
   font-size:14px; opacity:.5; pointer-events:none;
@@ -909,29 +958,29 @@ body.dark-mode .zoom-controls button:hover{
 .acc-bar-fill{height:100%; background:var(--tile-blue-mid);}
 
 /* --- Landing & folders --- */
-.landing-intro{font-size:12.5px; color:var(--ink-soft); line-height:1.5; margin:0 0 14px;}
-.landing-actions{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:22px;}
+.landing-intro{font-size:12.5px; color:var(--ink-soft); line-height:1.5; margin:0 0 16px;}
+.landing-actions{display:flex; gap:10px; flex-wrap:wrap; flex-shrink:0;}
 .folder-grid{
   display:grid;
   grid-template-columns:repeat(auto-fill, minmax(140px, 1fr));
-  gap:12px;
+  gap:16px;
   margin-bottom:8px;
 }
 .folder-tile{
   background:#fff;
-  border:1.5px solid var(--tile-blue-pale);
+  border:none;
   border-top:4px solid var(--tab-color, var(--tile-blue-pale));
   border-radius:6px 6px 16px 16px;
-  padding:14px 14px 16px;
+  box-shadow:0 2px 10px rgba(0,0,0,.05);
+  padding:16px 16px 18px;
   cursor:pointer;
   text-align:left;
   display:flex;
   flex-direction:column;
   gap:6px;
-  transition:border-color .12s ease, background .12s ease, transform .12s ease;
+  transition:box-shadow .12s ease, background .12s ease, transform .12s ease;
 }
-.folder-tile:hover{border-color:var(--tile-blue-mid); background:#FAF6EA; transform:translateY(-1px);}
-.folder-tile:hover{border-top-color:var(--tab-color, var(--tile-blue-mid));}
+.folder-tile:hover{background:#FAF6EA; transform:translateY(-1px); box-shadow:0 4px 14px rgba(0,0,0,.08);}
 .folder-tile .folder-icon{font-size:22px;}
 .folder-tile .folder-tab-chip{
   display:flex; align-items:center; gap:5px;
@@ -951,6 +1000,93 @@ body.dark-mode .zoom-controls button:hover{
 }
 .folder-tile.new-folder .folder-name{color:var(--tile-blue);}
 .folder-tile.unfiled{background:var(--tile-blue-paler);}
+
+/* --- Landing: Continue studying + Your sets side-by-side ---
+   Single column (stacked) by default so the phone layout keeps working
+   exactly as before; becomes a two-up desk layout once there's room. */
+.landing-columns{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:36px;
+  align-items:start;
+}
+.landing-columns.no-recent{grid-template-columns:1fr;}
+@media (min-width:720px){
+  .landing-columns{grid-template-columns:1.15fr 1fr; gap:44px;}
+}
+.landing-col-folders .folder-grid{margin-bottom:0;}
+.recent-activity-list{
+  display:flex;
+  flex-direction:column;
+}
+.recent-item{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  width:100%;
+  background:none;
+  border:none;
+  border-bottom:1px solid var(--tile-blue-paler);
+  border-radius:10px;
+  padding:12px 6px;
+  cursor:pointer;
+  text-align:left;
+  font-family:var(--font);
+  transition:background .12s ease;
+}
+.recent-item:last-child{border-bottom:none;}
+.recent-item:hover{background:var(--tile-blue-paler);}
+.recent-item-icon{
+  flex-shrink:0;
+  width:36px; height:36px;
+  border-radius:50%;
+  background:var(--tile-blue-paler);
+  display:flex; align-items:center; justify-content:center;
+  font-size:16px;
+}
+.recent-item:hover .recent-item-icon{background:#fff;}
+.recent-item-main{
+  flex:1;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+.recent-item-name{
+  font-weight:700;
+  font-size:13.5px;
+  color:var(--ink);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.recent-item-meta{
+  font-size:11.5px;
+  color:var(--ink-soft);
+  font-weight:600;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.recent-item-side{
+  flex-shrink:0;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:4px;
+}
+.recent-item-time{
+  font-size:10.5px;
+  color:var(--ink-soft);
+  font-weight:600;
+  white-space:nowrap;
+}
+.recent-item-cta{
+  font-size:12px;
+  font-weight:700;
+  color:var(--tile-blue-deep);
+  white-space:nowrap;
+}
 .back-link{
   background:none; border:none; padding:0; cursor:pointer;
   font-family:var(--font); font-weight:700; font-size:13px;
@@ -1028,16 +1164,19 @@ body.dark-mode .zoom-controls button:hover{
 <body>
 <div id="bgLayer"><video id="bgVideoEl" muted loop autoplay playsinline></video></div>
 
-<div class="frame">
+<div class="app-shell">
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+      <button class="btn-ghost stats-toggle" id="homeBtn" title="Home">🏠 Home</button>
+      <button class="btn-ghost stats-toggle" id="statsToggleBtn" title="Stats">📊 Stats</button>
+      <button class="btn-ghost stats-toggle" id="settingsToggleBtn" title="Settings">⚙️ Settings</button>
+    </nav>
+  </aside>
+  <div class="frame wide">
   <div class="header">
     <div class="header-title">
       <div class="eyebrow">Study set</div>
       <h1>Topic Review</h1>
-    </div>
-    <div class="header-actions">
-      <button class="btn-ghost stats-toggle" id="homeBtn" title="Home">🏠 Home</button>
-      <button class="btn-ghost stats-toggle" id="statsToggleBtn" title="Stats">📊 Stats</button>
-      <button class="btn-ghost stats-toggle" id="settingsToggleBtn" title="Settings">⚙️ Settings</button>
     </div>
   </div>
 
@@ -1119,20 +1258,29 @@ body.dark-mode .zoom-controls button:hover{
             <button class="btn-ghost" id="discardResumeBtn">Discard</button>
           </div>
         </div>
-        <div class="search-wrap">
-          <span class="search-icon">🔍</span>
-          <input type="text" id="deckSearchInput" class="search-input" placeholder="Search all your sets by name…">
-          <button type="button" class="search-clear hidden" id="searchClearBtn" title="Clear search">✕</button>
-        </div>
-        <div class="landing-actions">
-          <button class="btn-primary" id="newSetBtn">+ New set</button>
-          <button class="btn-ghost" id="trySampleBtn">Load sample deck</button>
+        <div class="landing-toolbar">
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="deckSearchInput" class="search-input" placeholder="Search all your sets by name…">
+            <button type="button" class="search-clear hidden" id="searchClearBtn" title="Clear search">✕</button>
+          </div>
+          <div class="landing-actions">
+            <button class="btn-primary" id="newSetBtn">+ New set</button>
+            <button class="btn-ghost" id="trySampleBtn">Load sample deck</button>
+          </div>
         </div>
         <div id="searchResults" class="hidden"></div>
-        <div id="folderGridWrap">
-          <label class="field-label">Folders</label>
-          <p class="landing-intro">Filed automatically by Subject — saved right on this device.</p>
-          <div class="folder-grid" id="folderGrid"></div>
+        <div id="landingColumns" class="landing-columns">
+          <div id="recentActivityWrap" class="landing-col-recent hidden">
+            <label class="field-label">Continue studying</label>
+            <p class="landing-intro">Pick up where you left off.</p>
+            <div class="recent-activity-list" id="recentActivityList"></div>
+          </div>
+          <div id="folderGridWrap" class="landing-col-folders">
+            <label class="field-label">Your sets</label>
+            <p class="landing-intro">Filed automatically by Subject — saved right on this device.</p>
+            <div class="folder-grid" id="folderGrid"></div>
+          </div>
         </div>
       </div>
 
@@ -1380,7 +1528,7 @@ OUTCOME: NEG
       <!-- BRAIN BREAK -->
       <div id="brainBreak" class="hidden">
         <div class="index-no">BRAIN BREAK</div>
-        <div class="question" id="brainBreakHeadline">🌿 Nice work — take a breather.</div>
+        <div class="question" id="brainBreakHeadline">Nice work — take a breather.</div>
         <div class="hint" id="brainBreakStats" style="margin-bottom:20px;"></div>
         <div class="tip-box" style="display:block;">
           <span class="tip-label">While you're here</span>
@@ -1445,6 +1593,15 @@ OUTCOME: NEG
         </div>
 
         <div class="backup-block">
+          <label class="field-label">Main box transparency</label>
+          <div class="hint" style="margin-top:0;">Adjust how see-through the main content box is against the background.</div>
+          <div class="row" style="gap:12px; flex-wrap:nowrap;">
+            <input type="range" id="cardOpacitySlider" min="20" max="100" step="1" value="100" style="flex:1;">
+            <span id="cardOpacityValue" style="font-weight:600; font-size:13px; min-width:34px; text-align:right;">100%</span>
+          </div>
+        </div>
+
+        <div class="backup-block">
           <label class="field-label">Related image on cards</label>
           <p class="modal-hint">
             Optional: after you answer a card, shows a real photo (not AI-generated) from Google Image Search related to the answer — whether or not that card has an exam tip. This needs your own free Google Custom Search API key and Search Engine ID — Google gives 100 free image searches a day, then it's paid per query. Your key stays only in this browser's local storage; it's never sent anywhere but Google.
@@ -1484,6 +1641,7 @@ OUTCOME: NEG
     </div>
   </div>
   <div class="tile-border bottom"></div>
+  </div>
 </div>
 
 <script>
@@ -1628,6 +1786,10 @@ const BG_KEY = 'topicReview_bg_v1';
 const BG_TYPE_KEY = 'topicReview_bgType_v1';
 const PALETTE_KEY = 'topicReview_palette_v1';
 const BG_BLUR_KEY = 'topicReview_bgBlur_v1';
+const CARD_OPACITY_KEY = 'topicReview_cardOpacity_v1';
+function applyCardOpacity(pct){
+  document.documentElement.style.setProperty('--card-alpha', (pct / 100));
+}
 const SESSIONS_KEY = 'topicReview_sessions_v1';
 const CASE_PROGRESS_KEY = 'topicReview_caseProgress_v1';
 const SCRATCH_ID = '__scratch__'; // bucket for an in-progress quiz that was never saved as a named set
@@ -1654,8 +1816,9 @@ function showLanding(){
   $('deckSearchInput').value = '';
   $('searchResults').classList.add('hidden');
   $('searchClearBtn').classList.add('hidden');
-  $('folderGridWrap').classList.remove('hidden');
+  $('landingColumns').classList.remove('hidden');
   renderLanding();
+  renderRecentActivity();
   checkForResumableSession();
 }
 function showFolder(id){
@@ -1754,6 +1917,21 @@ function genSetId(){ return 'set_' + Date.now().toString(36) + Math.random().toS
 function cardKey(card){ return card.front.trim().toLowerCase(); }
 function fmtDate(ts){
   return new Date(ts).toLocaleDateString(undefined, {month:'short', day:'numeric'});
+}
+// Short relative label for the "Continue studying" list — falls back to
+// fmtDate's calendar-date form once something is more than a week old.
+function fmtRelative(ts){
+  if(!ts) return '';
+  const diffMs = Date.now() - ts;
+  const min = Math.floor(diffMs / 60000);
+  if(min < 1) return 'Just now';
+  if(min < 60) return `${min} min ago`;
+  const hr = Math.floor(min / 60);
+  if(hr < 24) return hr === 1 ? '1 hour ago' : `${hr} hours ago`;
+  const day = Math.floor(hr / 24);
+  if(day === 1) return 'Yesterday';
+  if(day < 7) return `${day} days ago`;
+  return fmtDate(ts);
 }
 
 /* ---- Folders (auto-derived from each set's Subject tag; LE tag sorts within) ---- */
@@ -1901,6 +2079,94 @@ function buildSetRow(sid, s, opts){
   return row;
 }
 
+// "Continue studying" reuses the exact same session/case-progress state
+// as buildSetRow's Continue/Continue-case buttons — it's just a landing-
+// page shortcut to the most recently touched sets, not a separate
+// progress-tracking system.
+function getRecentActivity(limit){
+  const sets = loadSets();
+  const allSessions = loadAllSessions();
+  const allCaseProgress = loadCaseProgressAll();
+  const items = [];
+  Object.entries(sets).forEach(([sid, s]) => {
+    const isCase = s.kind === 'algorithm';
+    let updatedAt = 0, status = null;
+    if(isCase){
+      const cp = allCaseProgress[sid];
+      if(cp && cp.updatedAt){
+        updatedAt = cp.updatedAt;
+        status = {type:'case', score: cp.score || 0};
+      }
+    } else {
+      const sess = allSessions[sid];
+      if(sess && sess.current && Array.isArray(sess.cards) && sess.cards.length && sess.updatedAt){
+        updatedAt = sess.updatedAt;
+        status = {type:'quiz', asked: sess.askedCount || 1, total: sess.totalCards || sess.cards.length, mastered: sess.masteredCount || 0};
+      }
+    }
+    if(!updatedAt && !isCase && s.completed && s.completedAt){
+      updatedAt = s.completedAt;
+      status = {type:'completed'};
+    }
+    if(updatedAt) items.push({sid, s, isCase, updatedAt, status});
+  });
+  items.sort((a, b) => b.updatedAt - a.updatedAt);
+  return typeof limit === 'number' ? items.slice(0, limit) : items;
+}
+
+function renderRecentActivity(){
+  const wrap = $('recentActivityWrap');
+  const cols = $('landingColumns');
+  const list = $('recentActivityList');
+  if(!wrap || !list) return;
+  const items = getRecentActivity(4);
+  list.innerHTML = '';
+  if(items.length === 0){
+    wrap.classList.add('hidden');
+    if(cols) cols.classList.add('no-recent');
+    return;
+  }
+  wrap.classList.remove('hidden');
+  if(cols) cols.classList.remove('no-recent');
+  items.forEach(item => {
+    const {s, isCase, status} = item;
+    const subjectPrefix = s.subject ? `${escapeHtml(s.subject)} · ` : '';
+    let metaStr = `${s.cards.length} cards`;
+    if(status.type === 'quiz') metaStr = `Card ${status.asked} of ${status.total}`;
+    else if(status.type === 'case') metaStr = `Score ${status.score}`;
+    else if(status.type === 'completed') metaStr = `Completed · ${fmtDate(s.completedAt)}`;
+    const row = document.createElement('button');
+    row.type = 'button';
+    row.className = 'recent-item';
+    row.innerHTML = `
+      <span class="recent-item-icon">${isCase ? '🩺' : '📘'}</span>
+      <span class="recent-item-main">
+        <span class="recent-item-name">${escapeHtml(s.name)}</span>
+        <span class="recent-item-meta">${subjectPrefix}${metaStr}</span>
+      </span>
+      <span class="recent-item-side">
+        <span class="recent-item-time">${fmtRelative(item.updatedAt)}</span>
+        <span class="recent-item-cta">Continue →</span>
+      </span>`;
+    row.addEventListener('click', () => continueRecentItem(item));
+    list.appendChild(row);
+  });
+}
+
+function continueRecentItem(item){
+  const {sid, s, isCase, status} = item;
+  setupReturnTo = null; // "← Back" from setup should land back on the landing page
+  if(isCase){
+    const result = startCaseGame(s.algoSource || '', sid, s.name, {screen:'landing'});
+    if(!result.ok) alert(result.message);
+  } else if(status.type === 'quiz'){
+    resumeSession(sid);
+  } else {
+    setInputMode(s.mode || 'classic');
+    launchQuiz(JSON.parse(JSON.stringify(s.cards)), sid);
+  }
+}
+
 function renameSetById(id){
   const sets = loadSets();
   const s = sets[id];
@@ -1913,7 +2179,7 @@ function renameSetById(id){
   s.updatedAt = Date.now();
   saveSetsData(sets);
   if(!$('folderView').classList.contains('hidden')) renderFolderView();
-  else if(!$('landing').classList.contains('hidden')) renderLanding();
+  else if(!$('landing').classList.contains('hidden')){ renderLanding(); renderRecentActivity(); }
 }
 
 function duplicateSetById(id){
@@ -1927,7 +2193,7 @@ function duplicateSetById(id){
   sets[newId] = copy;
   saveSetsData(sets);
   if(!$('folderView').classList.contains('hidden')) renderFolderView();
-  else if(!$('landing').classList.contains('hidden')) renderLanding();
+  else if(!$('landing').classList.contains('hidden')){ renderLanding(); renderRecentActivity(); }
 }
 
 function renderFolderView(){
@@ -1981,10 +2247,10 @@ function renderSearchResults(query){
   if(!q){
     box.classList.add('hidden');
     box.innerHTML = '';
-    $('folderGridWrap').classList.remove('hidden');
+    $('landingColumns').classList.remove('hidden');
     return;
   }
-  $('folderGridWrap').classList.add('hidden');
+  $('landingColumns').classList.add('hidden');
   box.classList.remove('hidden');
   box.innerHTML = '';
   const sets = loadSets();
@@ -2030,7 +2296,7 @@ function deleteSetById(id){
   saveSetsData(sets);
   if(activeSetId === id) activeSetId = null;
   if(!$('folderView').classList.contains('hidden')) renderFolderView();
-  else if(!$('landing').classList.contains('hidden')) renderLanding();
+  else if(!$('landing').classList.contains('hidden')){ renderLanding(); renderRecentActivity(); }
 
   if(_pendingDelete) finalizeDelete(_pendingDelete); // flush any prior pending delete first
   const timer = setTimeout(() => finalizeDelete(entry), 5000);
@@ -2057,7 +2323,7 @@ function undoDelete(entry){
   sets[entry.id] = entry.set;
   saveSetsData(sets);
   if(!$('folderView').classList.contains('hidden')) renderFolderView();
-  else if(!$('landing').classList.contains('hidden')) renderLanding();
+  else if(!$('landing').classList.contains('hidden')){ renderLanding(); renderRecentActivity(); }
   hideUndoToast();
 }
 
@@ -2384,6 +2650,11 @@ function handleBgVideoFile(file){
     applyBgBlur(blurPx);
     if($('bgBlurSlider')){ $('bgBlurSlider').value = blurPx; }
     if($('bgBlurValue')){ $('bgBlurValue').textContent = blurPx + 'px'; }
+    const opacity = lsGet(CARD_OPACITY_KEY);
+    const opacityPct = opacity !== null ? opacity : 100;
+    applyCardOpacity(opacityPct);
+    if($('cardOpacitySlider')){ $('cardOpacitySlider').value = opacityPct; }
+    if($('cardOpacityValue')){ $('cardOpacityValue').textContent = opacityPct + '%'; }
   }catch(e){}
 })();
 
@@ -2402,6 +2673,13 @@ $('bgBlurSlider').oninput = e => {
   applyBgBlur(px);
   $('bgBlurValue').textContent = px + 'px';
   lsSet(BG_BLUR_KEY, px);
+};
+
+$('cardOpacitySlider').oninput = e => {
+  const pct = e.target.value;
+  applyCardOpacity(pct);
+  $('cardOpacityValue').textContent = pct + '%';
+  lsSet(CARD_OPACITY_KEY, pct);
 };
 
 (function initBackground(){
@@ -2537,7 +2815,7 @@ function renderPlant(progress, opts){
 function spawnPlusOne(){
   const span = document.createElement('span');
   span.className = 'plus-float';
-  span.textContent = '+1 🍇';
+  span.textContent = '+1';
   vineFrame.appendChild(span);
   setTimeout(() => span.remove(), 1000);
 }
@@ -4436,8 +4714,8 @@ document.addEventListener('keydown', e => {
 document.addEventListener('DOMContentLoaded',function(){
  let scale=parseFloat(lsGet('topicReviewScale')||'1');
  function apply(){
-   document.querySelector('.frame').style.transform='scale('+scale+')';
-   document.querySelector('.frame').style.transformOrigin='top center';
+   document.querySelector('.app-shell').style.transform='scale('+scale+')';
+   document.querySelector('.app-shell').style.transformOrigin='top center';
    // Reserve enough room for the fixed zoom/dark-mode/fullscreen toolbar
    // (its own height + bottom offset) so page content never sits under it,
    // instead of the old flat 60px which was too small once the toolbar's
@@ -4484,6 +4762,36 @@ document.addEventListener('DOMContentLoaded',function(){
  document.addEventListener('webkitfullscreenchange', updateFsBtn);
  updateFsBtn();
 });
+</script>
+
+<script>
+/* ---- Sidebar nav alignment: on the desktop rail layout, the nav
+   (Home/Stats/Settings) sits below the leaf emoji + gap, which lands
+   higher than the card's top edge. Push it down with a measured
+   margin so it lines up with the card instead of the shorter header.
+   Uses offsetTop chains (pre-transform layout coords) rather than
+   getBoundingClientRect so the page-zoom transform doesn't throw it off. ---- */
+(function(){
+  function offsetRelativeTo(el, ancestor){
+    let top = 0;
+    while(el && el !== ancestor){ top += el.offsetTop; el = el.offsetParent; }
+    return top;
+  }
+  function alignSidebarNav(){
+    const nav = document.querySelector('.sidebar-nav');
+    const card = document.querySelector('.card');
+    const shell = document.querySelector('.app-shell');
+    if(!nav || !card || !shell) return;
+    if(window.innerWidth <= 899){ nav.style.marginTop = ''; return; }
+    nav.style.marginTop = '0px';
+    const diff = offsetRelativeTo(card, shell) - offsetRelativeTo(nav, shell);
+    nav.style.marginTop = (diff > 0 ? diff : 0) + 'px';
+  }
+  window.addEventListener('load', alignSidebarNav);
+  window.addEventListener('resize', alignSidebarNav);
+  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(alignSidebarNav); }
+  document.addEventListener('DOMContentLoaded', alignSidebarNav);
+})();
 </script>
 
 </body>
