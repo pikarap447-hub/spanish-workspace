@@ -4715,13 +4715,15 @@ document.addEventListener('DOMContentLoaded',function(){
  let scale=parseFloat(lsGet('topicReviewScale')||'1');
  function apply(){
    document.querySelector('.app-shell').style.transform='scale('+scale+')';
-   // top left (not top center): scaling from center splits the extra width
-   // evenly on both sides of the page, and that kind of centered overflow
-   // is unreachable by normal scrolling in Chrome/Safari (you can't scroll
-   // to content that overflows on both sides of a centered element at once).
-   // Scaling from the top-left corner instead makes all the extra size grow
-   // off to the right/bottom only, which is normal, scrollable overflow.
-   document.querySelector('.app-shell').style.transformOrigin='top left';
+   // Anchor point depends on direction:
+   // - Zoomed IN (scale>1): anchor top-left so the extra size only grows
+   //   off to the right/bottom (normal, scrollable overflow) instead of
+   //   splitting evenly on both sides of center, which Chrome/Safari won't
+   //   let you scroll into.
+   // - At 100% or zoomed OUT (scale<=1): anchor top-center as before, so
+   //   the page stays visually centered instead of shrinking toward the
+   //   top-left corner and leaving dead space on the right/bottom.
+   document.querySelector('.app-shell').style.transformOrigin = scale > 1 ? 'top left' : 'top center';
    // Reserve enough room for the fixed zoom/dark-mode/fullscreen toolbar
    // (its own height + bottom offset) so page content never sits under it,
    // instead of the old flat 60px which was too small once the toolbar's
