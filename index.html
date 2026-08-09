@@ -51,66 +51,51 @@ padding:36px clamp(16px, 4vw, 48px) 116px;
   .frame{width:100%; max-width:680px;}
   .frame.wide{max-width:1020px; min-width:0; justify-self:center; width:100%;}
 
-  /* ---- App shell: desktop shows a left rail (nav + botanical touches,
-     matching the reference layout); phones fall back to the original
-     compact top nav row so nothing cramps at small widths. ---- */
+  /* ---- App shell: single centered column. Nav lives under the title
+     as a compact horizontal pill row instead of a separate rail, so it
+     reads as part of the header rather than floating off to the side. ---- */
   .app-shell{
-    display:grid;
-    min-width:0;
-    /* Middle track used to be a fixed minmax(0,1020px) — a non-flexible
-       track never claims leftover space in CSS Grid (only fr/auto tracks
-       do), so the card never actually grew to fill the screen even though
-       the app-shell itself was width:100%. 1fr makes it a real flexible
-       track; .frame.wide's own max-width:1020px still caps how big the
-       card gets, and justify-self:center (below) keeps it centered once
-       it hits that cap instead of hugging the left edge of the track. */
-    grid-template-columns:190px minmax(0, 1fr) 190px;
-    align-items:start;
-    gap:34px;
-    width:100%;
-    justify-content:center;
-  }
-  .app-shell::after{content:''; grid-column:3;} /* mirrors the sidebar's width so the frame lands dead-center */
-  .sidebar{
-    grid-column:1;
     display:flex;
     flex-direction:column;
-    gap:22px;
-    width:190px;
-    padding-top:6px;
-  }
-  .frame.wide{grid-column:2;}
-  .sidebar-nav{display:flex; flex-direction:column; gap:8px;}
-  .sidebar-nav .stats-toggle{
+    align-items:center;
+    min-width:0;
     width:100%;
-    justify-content:flex-start;
-    text-align:left;
-    border-radius:12px;
-    padding:10px 14px !important;
+  }
+
+  .sidebar-nav{
+    display:flex; flex-direction:row; flex-wrap:wrap; gap:4px;
+    justify-content:center;
+    background:rgba(255,255,255,.55);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    border:1px solid var(--tile-blue-pale);
+    border-radius:16px;
+    padding:5px;
+    box-shadow:0 6px 18px rgba(0,0,0,.06);
+  }
+  .sidebar-nav .stats-toggle{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
+    border-radius:11px;
+    padding:9px 16px !important;
     font-size:13px !important;
+    background:transparent !important;
+    border:none !important;
+    backdrop-filter:none !important;
+    -webkit-backdrop-filter:none !important;
+    color:var(--tile-blue-deep);
+    transition:background .15s ease, transform .08s ease;
   }
-  @media (max-width:899px){
-    .app-shell{display:flex; flex-direction:column; align-items:center;}
-    .app-shell::after{display:none;}
-    .sidebar{
-      display:flex;
-      flex-direction:row;
-      flex-wrap:wrap;
-      justify-content:center;
-      width:100%;
-      gap:6px;
-      padding-top:0;
-      margin-bottom:18px;
-    }
-    .sidebar-nav{flex-direction:row; flex-wrap:wrap; justify-content:center; width:100%; gap:6px;}
-    .sidebar-nav .stats-toggle{width:auto;}
-  }
+  .sidebar-nav .stats-toggle:hover{background:var(--tile-blue-paler) !important;}
+  .sidebar-nav .stats-toggle:active{transform:scale(.97);}
 
   .header{
     display:flex;
     flex-direction:column;
     align-items:center;
-    gap:6px;
+    gap:14px;
     margin-bottom:28px;
   }
   .header-title{
@@ -765,9 +750,8 @@ body.dark-mode .zoom-controls button:hover{
 .stats-toggle{
   font-size:12px !important; padding:7px 10px !important;
   white-space:nowrap;
-  background:rgba(255,255,255,.62) !important;
-  backdrop-filter:blur(8px);
-  -webkit-backdrop-filter:blur(8px);
+  font-weight:700;
+  letter-spacing:.01em;
 }
 @media (min-width:520px){
   .header-actions{ justify-content:flex-end; }
@@ -1205,19 +1189,17 @@ body.dark-mode .zoom-controls button:hover{
 <div id="bgLayer"><video id="bgVideoEl" muted loop autoplay playsinline></video></div>
 
 <div class="app-shell">
-  <aside class="sidebar">
-    <nav class="sidebar-nav">
-      <button class="btn-ghost stats-toggle" id="homeBtn" title="Home">🏠 Home</button>
-      <button class="btn-ghost stats-toggle" id="statsToggleBtn" title="Stats">📊 Stats</button>
-      <button class="btn-ghost stats-toggle" id="settingsToggleBtn" title="Settings">⚙️ Settings</button>
-    </nav>
-  </aside>
   <div class="frame wide">
   <div class="header">
     <div class="header-title">
       <div class="eyebrow">Study set</div>
       <h1>Topic Review</h1>
     </div>
+    <nav class="sidebar-nav">
+      <button class="btn-ghost stats-toggle" id="homeBtn" title="Home">🏠 Home</button>
+      <button class="btn-ghost stats-toggle" id="statsToggleBtn" title="Stats">📊 Stats</button>
+      <button class="btn-ghost stats-toggle" id="settingsToggleBtn" title="Settings">⚙️ Settings</button>
+    </nav>
   </div>
 
   <div class="tile-border"></div>
@@ -4810,36 +4792,6 @@ document.addEventListener('DOMContentLoaded',function(){
  document.addEventListener('webkitfullscreenchange', updateFsBtn);
  updateFsBtn();
 });
-</script>
-
-<script>
-/* ---- Sidebar nav alignment: on the desktop rail layout, the nav
-   (Home/Stats/Settings) sits below the leaf emoji + gap, which lands
-   higher than the card's top edge. Push it down with a measured
-   margin so it lines up with the card instead of the shorter header.
-   Uses offsetTop chains (pre-transform layout coords) rather than
-   getBoundingClientRect so the page-zoom transform doesn't throw it off. ---- */
-(function(){
-  function offsetRelativeTo(el, ancestor){
-    let top = 0;
-    while(el && el !== ancestor){ top += el.offsetTop; el = el.offsetParent; }
-    return top;
-  }
-  function alignSidebarNav(){
-    const nav = document.querySelector('.sidebar-nav');
-    const card = document.querySelector('.card');
-    const shell = document.querySelector('.app-shell');
-    if(!nav || !card || !shell) return;
-    if(window.innerWidth <= 899){ nav.style.marginTop = ''; return; }
-    nav.style.marginTop = '0px';
-    const diff = offsetRelativeTo(card, shell) - offsetRelativeTo(nav, shell);
-    nav.style.marginTop = (diff > 0 ? diff : 0) + 'px';
-  }
-  window.addEventListener('load', alignSidebarNav);
-  window.addEventListener('resize', alignSidebarNav);
-  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(alignSidebarNav); }
-  document.addEventListener('DOMContentLoaded', alignSidebarNav);
-})();
 </script>
 
 </body>
