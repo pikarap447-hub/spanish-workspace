@@ -1572,6 +1572,7 @@ OUTCOME: NEG
           <textarea id="editFront" class="edit-textarea" rows="2"></textarea>
           <label class="field-label" style="margin-top:10px;">Answer choices — tap a letter to mark the correct one</label>
           <div id="editOptionsList"></div>
+          <button type="button" class="btn-ghost" id="addEditOptionBtn" style="font-size:12px; padding:6px 12px;">+ Add another choice</button>
           <label class="field-label" style="margin-top:10px;">Exam tip</label>
           <textarea id="editTip" class="edit-textarea" rows="3"></textarea>
           <div class="footer-row" style="margin-top:14px;">
@@ -4562,9 +4563,13 @@ function openCardEditor(){
   $('editTip').value = current.tip || '';
 
   // Edit whatever's currently on screen (currentOptions), so what you see
-  // is what you correct — not just the raw stored answer.
+  // is what you correct — not just the raw stored answer. Always pad to
+  // at least 4 rows: some cards only have 2-3 real options because of an
+  // export/generation problem that merged multiple choices into one
+  // string, and the extra blank rows give room to split that text apart.
   const opts = (currentOptions && currentOptions.length) ? currentOptions.slice() : [current.back || ''];
   editCorrectIndex = Math.max(0, opts.findIndex(o => (o || '').toLowerCase() === (current.back || '').toLowerCase()));
+  while(opts.length < 4) opts.push('');
   renderEditOptions(opts);
 
   $('cardEditPanel').classList.remove('hidden');
@@ -4595,6 +4600,12 @@ function renderEditOptions(opts){
     list.appendChild(row);
   });
 }
+$('addEditOptionBtn').onclick = () => {
+  const vals = Array.from($('editOptionsList').querySelectorAll('textarea')).map(ta => ta.value);
+  if(vals.length >= EDIT_LETTERS.length) return;
+  vals.push('');
+  renderEditOptions(vals);
+};
 function closeCardEditor(){
   $('cardEditPanel').classList.add('hidden');
   $('questionText').classList.remove('hidden');
