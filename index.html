@@ -1179,9 +1179,20 @@ body.dark-mode .zoom-controls button:hover{
 .folder-header-row{
   display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:16px;
 }
+.landing-col-folders .folder-header-row{ margin-bottom:2px; align-items:center; }
+.sort-select{
+  font-family:var(--font);
+  font-weight:600;
+  font-size:11.5px;
+  padding:6px 8px;
+  border:1.5px solid var(--tile-blue-pale);
+  border-radius:10px;
+  background:#fff;
+  color:var(--ink-soft);
+  cursor:pointer;
+  flex-shrink:0;
+}
 .folder-title{font-family:var(--font); font-weight:700; font-size:20px; color:var(--ink);}
-.folder-header-actions{display:flex; gap:6px; flex-shrink:0;}
-.folder-header-actions button{padding:8px 12px; font-size:12.5px;}
 .set-item-select{
   font-family:var(--font);
   font-weight:600;
@@ -1348,7 +1359,14 @@ body.dark-mode .zoom-controls button:hover{
             <div class="recent-activity-list" id="recentActivityList"></div>
           </div>
           <div id="folderGridWrap" class="landing-col-folders">
-            <label class="field-label">Your sets</label>
+            <div class="folder-header-row">
+              <label class="field-label" style="margin-bottom:0;">Your sets</label>
+              <select id="folderSortSelect" class="sort-select">
+                <option value="recent">Sort: Last played</option>
+                <option value="az">Sort: A–Z</option>
+                <option value="count">Sort: Most sets</option>
+              </select>
+            </div>
             <p class="landing-intro">Filed automatically by Subject — saved right on this device.</p>
             <div class="folder-grid" id="folderGrid"></div>
           </div>
@@ -1360,6 +1378,11 @@ body.dark-mode .zoom-controls button:hover{
         <button class="back-link" id="folderBackBtn">← All folders</button>
         <div class="folder-header-row">
           <div class="folder-title" id="folderViewTitle"></div>
+          <select id="setSortSelect" class="sort-select">
+            <option value="le">Sort: LE number</option>
+            <option value="recent">Sort: Last played</option>
+            <option value="az">Sort: A–Z</option>
+          </select>
         </div>
         <div class="saved-sets-list" id="folderSetsList"></div>
         <div class="row" style="margin-top:16px;">
@@ -1866,6 +1889,8 @@ const tableBody = document.getElementById('tableBody');
 
 /* ---- Local library & stats (all data stays in this browser's localStorage) ---- */
 const SETS_KEY = 'topicReview_sets_v1';
+const FOLDER_SORT_KEY = 'topicReview_folderSort_v1';
+const SET_SORT_KEY = 'topicReview_setSort_v1';
 const STATS_KEY = 'topicReview_stats_v1';
 const GLOBAL_KEY = 'topicReview_global_v1';
 let activeSetId = null;
@@ -2053,7 +2078,19 @@ function renderLanding(){
 
   const subjects = new Set();
   Object.values(sets).forEach(s => { if(s.subject && s.subject.trim()) subjects.add(s.subject); });
-  const subjectIds = Array.from(subjects).sort((a,b) => a.localeCompare(b));
+  function folderLastPlayed(id){
+    return setsInFolder(id).reduce((max, [, s]) => Math.max(max, s.updatedAt || 0), 0);
+  }
+  const folderSortMode = lsGet(FOLDER_SORT_KEY) || 'recent';
+  const subjectIds = Array.from(subjects).sort((a, b) => {
+    if(folderSortMode === 'az') return a.localeCompare(b);
+    if(folderSortMode === 'count') return setsInFolder(b).length - setsInFolder(a).length || a.localeCompare(b);
+    // 'recent' (default): most-recently-played folder first; folders with
+    // no play history yet fall back to alphabetical so they don't jump
+    // to the top ahead of folders that have actually been studied.
+    const diff = folderLastPlayed(b) - folderLastPlayed(a);
+    return diff !== 0 ? diff : a.localeCompare(b);
+  });
 
   function hasPausedSet(folderId){
     return setsInFolder(folderId).some(([sid]) => {
@@ -2091,6 +2128,11 @@ function renderLanding(){
     grid.appendChild(hint);
   }
 }
+$('folderSortSelect').value = lsGet(FOLDER_SORT_KEY) || 'recent';
+$('folderSortSelect').onchange = e => {
+  try{ lsSet(FOLDER_SORT_KEY, e.target.value); }catch(err){}
+  renderLanding();
+};
 
 function folderDisplayName(id){
   return id === UNFILED ? 'Unfiled' : id;
@@ -2325,7 +2367,20 @@ function renderFolderView(){
     return;
   }
 
-  // group by LE tag (numeric ascending), untagged last; sort within a group by most recently updated
+  const sortMode = lsGet(SET_SORT_KEY) || 'le';
+
+  if(sortMode === 'recent'){
+    entries.sort((a,b) => (b[1].updatedAt||0) - (a[1].updatedAt||0));
+    entries.forEach(([sid, s]) => list.appendChild(buildSetRow(sid, s, {showFolderTag:false})));
+    return;
+  }
+  if(sortMode === 'az'){
+    entries.sort((a,b) => a[1].name.localeCompare(b[1].name));
+    entries.forEach(([sid, s]) => list.appendChild(buildSetRow(sid, s, {showFolderTag:false})));
+    return;
+  }
+
+  // 'le' (default): group by LE tag (numeric ascending), untagged last; sort within a group by most recently updated
   const groups = new Map();
   entries.forEach(entry => {
     const le = entry[1].le || '';
@@ -2351,6 +2406,11 @@ function renderFolderView(){
     group.forEach(([sid, s]) => list.appendChild(buildSetRow(sid, s, {showFolderTag:false})));
   });
 }
+$('setSortSelect').value = lsGet(SET_SORT_KEY) || 'le';
+$('setSortSelect').onchange = e => {
+  try{ lsSet(SET_SORT_KEY, e.target.value); }catch(err){}
+  renderFolderView();
+};
 
 // Flat search across every saved set by name, regardless of folder —
 // shown on the landing screen in place of the folder grid while typing.
