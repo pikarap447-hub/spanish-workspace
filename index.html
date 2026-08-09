@@ -1916,6 +1916,21 @@ let setupReturnTo = null;        // where "← Back" from setup should go: null 
 let statsReturnTo = {screen:'landing', folderId:null};
 let settingsReturnTo = {screen:'landing', folderId:null};
 
+/* ---- Quiz navigation/persistence helpers ----
+   Leaving the quiz via Home, Stats, or Settings is a pause/navigation action,
+   not a completed quiz. Save the exact current state first, then remember
+   where the user should return. */
+function isQuizScreenVisible(){
+  return !$('quiz').classList.contains('hidden');
+}
+function isBrainBreakVisible(){
+  return !$('brainBreak').classList.contains('hidden');
+}
+function saveBeforeNavigation(){
+  if(isQuizScreenVisible()) saveSession();
+  else if(isBrainBreakVisible()) saveSession({onBreak:true});
+}
+
 function hideAllScreens(){
   ['landing','folderView','setup','quiz','caseGame','brainBreak','results','statsView','settingsView'].forEach(id => {
     const el = $(id);
@@ -2076,10 +2091,11 @@ function renderLanding(){
   const grid = $('folderGrid');
   grid.innerHTML = '';
 
+  const allCaseProgress = loadCaseProgressAll();
   const subjects = new Set();
   Object.values(sets).forEach(s => { if(s.subject && s.subject.trim()) subjects.add(s.subject); });
   function folderLastPlayed(id){
-    return setsInFolder(id).reduce((max, [, s]) => Math.max(max, s.updatedAt || 0), 0);
+    return setsInFolder(id).reduce((max, [sid, s]) => Math.max(max, trueLastPlayedAt(sid, s, allSessions, allCaseProgress)), 0);
   }
   const folderSortMode = lsGet(FOLDER_SORT_KEY) || 'recent';
   const subjectIds = Array.from(subjects).sort((a, b) => {
@@ -2209,6 +2225,25 @@ function buildSetRow(sid, s, opts){
   return row;
 }
 
+// True "last played" timestamp for one set: an in-progress quiz session or
+// case-game checkpoint counts, and so does a finished quiz's completedAt —
+// but NOT s.updatedAt on its own, since that field also gets bumped by
+// renaming, duplicating, or just creating the set (none of which is "play").
+// Shared by getRecentActivity, the folder-sort "Last played" option, and the
+// within-folder set-sort "Last played" option, so all three agree.
+function trueLastPlayedAt(sid, s, allSessions, allCaseProgress){
+  const isCase = s.kind === 'algorithm';
+  if(isCase){
+    const cp = allCaseProgress[sid];
+    if(cp && cp.updatedAt) return cp.updatedAt;
+  } else {
+    const sess = allSessions[sid];
+    if(sess && sess.current && Array.isArray(sess.cards) && sess.cards.length && sess.updatedAt) return sess.updatedAt;
+  }
+  if(!isCase && s.completed && s.completedAt) return s.completedAt;
+  return 0;
+}
+
 // "Continue studying" reuses the exact same session/case-progress state
 // as buildSetRow's Continue/Continue-case buttons — it's just a landing-
 // page shortcut to the most recently touched sets, not a separate
@@ -2220,23 +2255,17 @@ function getRecentActivity(limit){
   const items = [];
   Object.entries(sets).forEach(([sid, s]) => {
     const isCase = s.kind === 'algorithm';
-    let updatedAt = 0, status = null;
-    if(isCase){
-      const cp = allCaseProgress[sid];
-      if(cp && cp.updatedAt){
-        updatedAt = cp.updatedAt;
-        status = {type:'case', score: cp.score || 0};
-      }
-    } else {
-      const sess = allSessions[sid];
-      if(sess && sess.current && Array.isArray(sess.cards) && sess.cards.length && sess.updatedAt){
-        updatedAt = sess.updatedAt;
+    const updatedAt = trueLastPlayedAt(sid, s, allSessions, allCaseProgress);
+    let status = null;
+    if(updatedAt){
+      if(isCase){
+        status = {type:'case', score: (allCaseProgress[sid] && allCaseProgress[sid].score) || 0};
+      } else if(s.completed && s.completedAt === updatedAt){
+        status = {type:'completed'};
+      } else {
+        const sess = allSessions[sid];
         status = {type:'quiz', asked: sess.askedCount || 1, total: sess.totalCards || sess.cards.length, mastered: sess.masteredCount || 0};
       }
-    }
-    if(!updatedAt && !isCase && s.completed && s.completedAt){
-      updatedAt = s.completedAt;
-      status = {type:'completed'};
     }
     if(updatedAt) items.push({sid, s, isCase, updatedAt, status});
   });
@@ -2370,7 +2399,12 @@ function renderFolderView(){
   const sortMode = lsGet(SET_SORT_KEY) || 'le';
 
   if(sortMode === 'recent'){
-    entries.sort((a,b) => (b[1].updatedAt||0) - (a[1].updatedAt||0));
+    const allSessions = loadAllSessions();
+    const allCaseProgress = loadCaseProgressAll();
+    entries.sort((a,b) => {
+      const diff = trueLastPlayedAt(b[0], b[1], allSessions, allCaseProgress) - trueLastPlayedAt(a[0], a[1], allSessions, allCaseProgress);
+      return diff !== 0 ? diff : a[1].name.localeCompare(b[1].name);
+    });
     entries.forEach(([sid, s]) => list.appendChild(buildSetRow(sid, s, {showFolderTag:false})));
     return;
   }
@@ -4074,32 +4108,70 @@ $('setupBackBtn').onclick = () => {
 
 showLanding();
 
-$('homeBtn').onclick = () => showLanding();
+$('homeBtn').onclick = () => {
+  // Home pauses the quiz; never discard its in-progress session.
+  saveBeforeNavigation();
+  showLanding();
+  renderRecentActivity();
+};
 
 $('statsToggleBtn').onclick = () => {
-  if(!$('setup').classList.contains('hidden')) statsReturnTo = {screen:'setup'};
+  saveBeforeNavigation();
+
+  if(isQuizScreenVisible()) statsReturnTo = {screen:'quiz'};
+  else if(isBrainBreakVisible()) statsReturnTo = {screen:'brainBreak'};
+  else if(!$('setup').classList.contains('hidden')) statsReturnTo = {screen:'setup'};
   else if(!$('folderView').classList.contains('hidden')) statsReturnTo = {screen:'folder', folderId: currentFolderId};
   else statsReturnTo = {screen:'landing'};
+
   hideAllScreens();
   $('statsView').classList.remove('hidden');
   renderStatsScreen();
 };
 
 $('settingsToggleBtn').onclick = () => {
-  if(!$('setup').classList.contains('hidden')) settingsReturnTo = {screen:'setup'};
+  saveBeforeNavigation();
+
+  if(isQuizScreenVisible()) settingsReturnTo = {screen:'quiz'};
+  else if(isBrainBreakVisible()) settingsReturnTo = {screen:'brainBreak'};
+  else if(!$('setup').classList.contains('hidden')) settingsReturnTo = {screen:'setup'};
   else if(!$('folderView').classList.contains('hidden')) settingsReturnTo = {screen:'folder', folderId: currentFolderId};
   else settingsReturnTo = {screen:'landing'};
+
   hideAllScreens();
   populateSettingsFields();
   $('settingsView').classList.remove('hidden');
 };
+
+function returnToPausedQuiz(){
+  hideAllScreens();
+  $('quiz').classList.remove('hidden');
+  showCard(currentOptions);
+  const saved = loadSession();
+  if(saved && saved.answered){
+    restoreAnsweredView(current, saved.chosen, saved.isCorrect);
+    answered = true;
+  }
+}
+
 $('backFromSettingsBtn').onclick = () => {
-  if(settingsReturnTo.screen === 'setup') showSetupScreen();
+  if(settingsReturnTo.screen === 'quiz') returnToPausedQuiz();
+  else if(settingsReturnTo.screen === 'brainBreak'){
+    hideAllScreens();
+    $('brainBreak').classList.remove('hidden');
+  }
+  else if(settingsReturnTo.screen === 'setup') showSetupScreen();
   else if(settingsReturnTo.screen === 'folder') showFolder(settingsReturnTo.folderId);
   else showLanding();
 };
+
 $('backToSetupBtn').onclick = () => {
-  if(statsReturnTo.screen === 'setup') showSetupScreen();
+  if(statsReturnTo.screen === 'quiz') returnToPausedQuiz();
+  else if(statsReturnTo.screen === 'brainBreak'){
+    hideAllScreens();
+    $('brainBreak').classList.remove('hidden');
+  }
+  else if(statsReturnTo.screen === 'setup') showSetupScreen();
   else if(statsReturnTo.screen === 'folder') showFolder(statsReturnTo.folderId);
   else showLanding();
 };
@@ -4432,8 +4504,9 @@ $('breakContinueBtn').onclick = () => {
 };
 
 $('quitFromBreakBtn').onclick = () => {
+  // Ending from a brain break also saves the paused quiz and returns Home.
   saveSession({onBreak: true});
-  showSetupScreen();
+  showLanding();
   renderRecentActivity();
 };
 
@@ -4888,8 +4961,9 @@ renderRecentActivity();
 $('nextBtn').onclick = () => nextFromQueue();
 
 $('quitBtn').onclick = () => {
+  // "End quiz" pauses the quiz instead of deleting its progress.
   saveSession();
-  showSetupScreen();
+  showLanding();
   renderRecentActivity();
 };
 
