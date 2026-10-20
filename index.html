@@ -5132,6 +5132,23 @@ body:before{
   .rl-hint kbd{display:inline-block;min-width:22px;padding:1px 6px;margin:0 2px;border:1px solid var(--pg-border);border-bottom-width:2px;border-radius:6px;background:var(--surface);color:var(--text);font:700 11px system-ui,sans-serif;text-align:center}
   .rl-gen .rl-check{align-self:center}
 
+  .rl-qa{margin-top:10px;display:grid;gap:6px}
+  .rl-qa-btns{display:flex;gap:6px;flex-wrap:wrap}
+  .rl-lint{border:1px solid var(--pg-border);border-radius:10px;background:var(--bg);padding:7px 10px;font-size:12.5px}
+  .rl-lint summary{cursor:pointer;font-weight:800;color:var(--pg-mid)}
+  .rl-lint ul{margin:8px 0;padding-left:18px;line-height:1.5}
+  .rl-lint li.dim{opacity:.6}
+  .rl-doubt-note{color:var(--pg-weak)!important;font-weight:700}
+  .rl-toast{position:fixed;left:50%;bottom:78px;transform:translateX(-50%);z-index:9999;max-width:min(92vw,520px);background:var(--text);color:var(--surface);padding:11px 16px;border-radius:12px;font-size:13px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+  .rl-toast.bad{background:var(--pg-weak);color:#fff}
+  .rl-vsum{font-size:15px;padding:10px 12px;border-radius:10px;margin:10px 0}
+  .rl-vsum.ok{background:var(--pg-strongbg);color:var(--pg-strong)}
+  .rl-vsum.bad{background:var(--pg-weakbg);color:var(--pg-weak)}
+  .rl-vlist{padding-left:0;list-style:none;display:grid;gap:6px}
+  .rl-vlist li{border:1px solid var(--pg-border);border-radius:10px;padding:8px 10px;font-size:13px}
+  .rl-syncrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 12px}
+  .rl-syncrow .pg-note{margin:0}
+
 /* ===== DELE Course Tracker (dl- prefixed, reuses app tokens) ===== */
 .dl-app *{box-sizing:border-box;}
 .dl-header{display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap; margin-bottom:18px;}
@@ -6796,6 +6813,7 @@ OUTCOME: NEG
               </div>
             </div>
 
+            <div class="rl-syncrow"><span id="rlSyncLine" class="pg-note"></span><button class="pg-btn rl-mini hidden" id="rlSyncNowBtn">↻ Sincronizar ahora</button></div>
             <div id="rlResume" class="rl-resume hidden"></div>
 
             <div class="pg-import-card rl-config">
@@ -6807,6 +6825,7 @@ OUTCOME: NEG
                 </select>
               </label>
               <label class="rl-check"><input type="checkbox" id="rlImmediate"> Corrección inmediata en Práctica</label>
+              <label class="rl-check" title="Cada intento baraja las letras de las opciones y la posición de los fragmentos, para que no se pueda adivinar por patrones"><input type="checkbox" id="rlShuffle" checked> Mezclar opciones en cada intento</label>
               <span class="pg-note">El ritmo acorta el tiempo total; úsalo para entrenar con margen extra.</span>
             </div>
 
@@ -6825,6 +6844,9 @@ OUTCOME: NEG
             <p class="pg-panel-p">1) Copia un prompt. 2) Pégalo en una IA <b>y adjunta el PDF o material oficial del Instituto Cervantes</b>. 3) Pega aquí lo que devuelva. Puedes pegar varios exámenes de golpe.</p>
             <div class="pg-import-card">
               <div class="rl-gen">
+                <label>Qué crear
+                  <select id="rlGenScope" class="pg-input"><option value="all">Examen completo (4 tareas)</option><option value="1">Solo Tarea 1</option><option value="2">Solo Tarea 2</option><option value="3">Solo Tarea 3</option><option value="4">Solo Tarea 4</option></select>
+                </label>
                 <label>Cantidad <input type="number" id="rlGenCount" class="pg-input" value="3" min="1" max="20" style="width:76px"></label>
                 <label class="rl-check"><input type="checkbox" id="rlGenReal" checked> Usar artículos reales actuales (si la IA puede navegar)</label>
                 <label class="rl-grow">Temas o foco (opcional) <input type="text" id="rlGenFocus" class="pg-input" placeholder="p. ej. más subjuntivo en la Tarea 4, textos de ciencia…"></label>
@@ -6860,6 +6882,14 @@ TYPE: MC
           <div class="rl-overlay-card"><h3>⏸ En pausa</h3><p class="pg-note">El reloj está detenido y el texto oculto. Solo disponible en Práctica.</p>
             <button class="pg-btn pg-btn-primary" data-rl="unpause">Reanudar</button></div>
         </div>
+        <div id="rlVerify" class="rl-overlay hidden">
+          <div class="rl-overlay-card rl-sheet-card"><div class="rl-sheet-head"><h3>Comparar con otra IA</h3><button class="pg-btn rl-mini" id="rlVerifyClose">Cerrar</button></div>
+            <p class="pg-note">Pega la respuesta de la otra IA (líneas «número: letra»). Cada discrepancia o «?» marca la pregunta como dudosa.</p>
+            <textarea id="rlVerifyIn" class="pg-textarea" style="min-height:150px" placeholder="1: b&#10;2: c&#10;7: B&#10;17: D&#10;23: a&#10;..."></textarea>
+            <div class="pg-actions"><button class="pg-btn pg-btn-primary" id="rlVerifyRun">Comparar</button></div>
+            <div id="rlVerifyOut"></div></div>
+        </div>
+        <div id="rlToast" class="rl-toast hidden"></div>
         <div id="rlSheet" class="rl-overlay hidden">
           <div class="rl-overlay-card rl-sheet-card"><div class="rl-sheet-head"><h3>Hoja de respuestas</h3><button class="pg-btn rl-mini" data-rl="close-sheet">Cerrar</button></div>
             <div id="rlSheetBody"></div></div>
@@ -6953,7 +6983,7 @@ NEXT: OPEN
    baked into the page, so if Settings shows an OLD value, that's proof the
    browser is serving a stale cached copy rather than the real thing — use
    the "Force refresh" button in Settings to break out of it. */
-const APP_VERSION = '2026-10-15 Lectura simulator v2';
+const APP_VERSION = '2026-10-20 Lectura + Vocab Comunidad';
 
 /* ===== JS-01b GLOBAL ERROR LOGGING =====
    Nothing anywhere in this file previously caught truly unexpected errors
@@ -7666,7 +7696,7 @@ const mergeStrategies = {
   // Reading simulator: exam library is keyed-by-id with updatedAt (newer wins);
   // attempt history is an append-only array with unique ids.
   [RL_EXAMS_KEY]: (local, cloud) => mergeKeyedById(local, cloud, 'id'),
-  [RL_ATTEMPTS_KEY]: (local, cloud) => mergeArrayById(local, cloud, 'id').slice(-400),
+  [RL_ATTEMPTS_KEY]: (local, cloud) => rlMergeAttempts(local, cloud),
   [STATS_KEY]: (local, cloud) => {
     const merged = Object.assign({}, cloud || {});
     Object.keys(local || {}).forEach(bucketId => {
@@ -7977,6 +8007,7 @@ document.addEventListener('visibilitychange', () => {
 
 // ---- UI: sync status indicator ----
 function setSyncStatus(status){
+  if(typeof rlSyncLineUpdate === 'function') rlSyncLineUpdate(status);
   const line = $('syncStatusLine');
   if(!line) return;
   const map = {
@@ -8384,7 +8415,7 @@ async function renderCommunityMine(forceRefresh){
     div.innerHTML = `
       <div class="community-set-main">
         <div class="community-set-title">${escapeHtml(row.title || 'Untitled set')}</div>
-        <div class="community-set-meta">${Number(row.card_count||0)} cards${row.subject ? `<span class="community-set-tag">${escapeHtml(row.subject)}</span>` : ''}${row.le ? `<span class="community-set-tag">Nivel ${escapeHtml(row.le)}</span>` : ''}${row.topic ? `<span class="community-set-tag">Tema ${escapeHtml(row.topic)}</span>` : ''}${row.professor ? `<span class="community-set-tag">👤 ${escapeHtml(row.professor)}</span>` : ''}${uploadedLabel ? `<span>Uploaded ${uploadedLabel}</span>` : ''}${editedLabel ? `<span>Edited ${editedLabel}</span>` : ''}${!linked ? `<span class="community-set-tag" title="No local set is linked to this upload — link one below, or delete it.">Not linked</span>` : ''}</div>
+        <div class="community-set-meta">${row.kind === 'reading' ? Number(row.card_count||0)+' preguntas · 📖 Lectura' : row.kind === 'vocab' ? Number(row.card_count||0)+' palabras · 🃏 Vocab' : row.kind === 'photo' ? 'Práctica de habla · 📷 Foto' : Number(row.card_count||0)+' cards'}${row.subject ? `<span class="community-set-tag">${escapeHtml(row.subject)}</span>` : ''}${row.le ? `<span class="community-set-tag">Nivel ${escapeHtml(row.le)}</span>` : ''}${row.topic ? `<span class="community-set-tag">Tema ${escapeHtml(row.topic)}</span>` : ''}${row.professor ? `<span class="community-set-tag">👤 ${escapeHtml(row.professor)}</span>` : ''}${uploadedLabel ? `<span>Uploaded ${uploadedLabel}</span>` : ''}${editedLabel ? `<span>Edited ${editedLabel}</span>` : ''}${!linked ? `<span class="community-set-tag" title="No local set is linked to this upload — link one below, or delete it.">Not linked</span>` : ''}</div>
         ${row.description ? `<div class="community-set-desc">${escapeHtml(row.description)}</div>` : ''}
         ${!linked ? `<div style="display:flex; align-items:center; gap:6px; margin-top:8px; flex-wrap:wrap;">
           <select class="sort-select" data-relink-select="${row.id}">
@@ -8893,7 +8924,7 @@ function p2EnhanceCard(r){
     const b=(label,fn)=>{const x=document.createElement('button');x.className='community-icon-btn';x.textContent=label;x.onclick=fn;return x;};
     // Remix duplicates a deck into the main flashcard Sets collection —
     // meaningless for a Foto case (no card table to edit), so skip it there.
-    const remixBtn = r.kind === 'photo' ? [] : [b('♻ Remix',()=>p2Remix(r.id))];
+    const remixBtn = (r.kind === 'photo' || r.kind === 'reading' || r.kind === 'vocab') ? [] : [b('♻ Remix',()=>p2Remix(r.id))];
     actions.prepend(b('History',()=>p2Versions(r.id)),b('＋ Collection',()=>p2AddCollection(r.id)),...remixBtn);
   }
   const author=div.querySelector('.community-set-author');if(author){author.style.cursor='pointer';author.onclick=()=>p2OpenProfile(r.owner_id);}
@@ -8955,7 +8986,7 @@ function renderCommunityCard(r){
   const cardTypeLabel = r.card_type === 'samplex' ? 'Samplex' : (r.card_type === 'topic' ? 'Topic Cards' : r.card_type);
   const subjColor = r.subject ? subjectColor(r.subject) : null;
   const subjectTag = r.subject ? `<span class="community-set-tag subject-tag" style="background:${subjColor}">${escapeHtml(r.subject)}</span>` : '';
-  const tags = subjectTag + [r.le ? `Nivel ${r.le}` : null, cardTypeLabel, r.topic, r.professor ? `👤 ${r.professor}` : null, r.kind === 'algorithm' ? 'Algorithm' : null, r.kind === 'photo' ? '📷 Foto DELE B2' : null].filter(Boolean).slice(0,4).map(t => `<span class="community-set-tag">${escapeHtml(t)}</span>`).join('');
+  const tags = subjectTag + [r.le ? `Nivel ${r.le}` : null, cardTypeLabel, r.topic, r.professor ? `👤 ${r.professor}` : null, r.kind === 'algorithm' ? 'Algorithm' : null, r.kind === 'photo' ? '📷 Foto DELE B2' : null, r.kind === 'reading' ? '📖 Lectura DELE B2' : null, r.kind === 'vocab' ? '🃏 Vocabulario' : null].filter(Boolean).slice(0,4).map(t => `<span class="community-set-tag">${escapeHtml(t)}</span>`).join('');
   const uploadedLabel = r.created_at ? new Date(r.created_at).toLocaleDateString(undefined, {month:'short', day:'numeric', year:'numeric'}) : null;
   // "Edited" only shows once the gap between created_at and updated_at is
   // large enough to be a real, later edit rather than noise from whatever
@@ -8970,7 +9001,7 @@ function renderCommunityCard(r){
     <div class="community-set-main">
       <div class="community-set-title">${escapeHtml(r.title || 'Untitled set')}</div>
       <div class="community-set-author">👤 @${escapeHtml(r.username || 'unknown')}${uploadedLabel ? ` · Uploaded ${uploadedLabel}` : ''}${editedLabel ? ` · <span title="Last edited ${editedLabel}">Edited ${editedLabel}</span>` : ''}</div>
-      <div class="community-set-meta"><span>${r.kind === 'photo' ? 'Práctica de habla' : `${Number(r.card_count||0)} cards`}</span>${tags}</div>
+      <div class="community-set-meta"><span>${r.kind === 'photo' ? 'Práctica de habla' : r.kind === 'reading' ? `${Number(r.card_count||0)} preguntas` : r.kind === 'vocab' ? `${Number(r.card_count||0)} palabras` : `${Number(r.card_count||0)} cards`}</span>${tags}</div>
       ${r.description ? `<div class="community-set-desc">${escapeHtml(r.description)}</div>` : ''}
       <div class="community-set-stats">
         <span class="community-set-stat">↓ ${Number(r.import_count||0)} imports</span>
@@ -9105,7 +9136,7 @@ async function openCommunityPreview(id){
   const uploadedLabel = row.created_at ? new Date(row.created_at).toLocaleDateString(undefined, {month:'short', day:'numeric', year:'numeric'}) : null;
   const wasEdited = row.created_at && row.updated_at && (new Date(row.updated_at).getTime() - new Date(row.created_at).getTime() > 60000);
   const editedLabel = wasEdited ? new Date(row.updated_at).toLocaleDateString(undefined, {month:'short', day:'numeric', year:'numeric'}) : null;
-  $('communityPreviewMeta').textContent = `by @${row.username || 'unknown'} · ${row.kind === 'photo' ? 'Práctica de habla (DELE B2)' : Number(row.card_count||0)+' cards'}${row.subject ? ' · '+row.subject : ''}${uploadedLabel ? ' · Uploaded '+uploadedLabel : ''}${editedLabel ? ' · Edited '+editedLabel : ''}`;
+  $('communityPreviewMeta').textContent = `by @${row.username || 'unknown'} · ${row.kind === 'photo' ? 'Práctica de habla (DELE B2)' : row.kind === 'reading' ? 'Simulacro de lectura (DELE B2) · '+Number(row.card_count||0)+' preguntas' : row.kind === 'vocab' ? 'Biblioteca de vocabulario · '+Number(row.card_count||0)+' palabras' : Number(row.card_count||0)+' cards'}${row.subject ? ' · '+row.subject : ''}${uploadedLabel ? ' · Uploaded '+uploadedLabel : ''}${editedLabel ? ' · Edited '+editedLabel : ''}`;
   $('communityPreviewStats').innerHTML = `<span class="community-set-stat">↓ ${Number(row.import_count||0)} imports</span><span class="community-set-stat">❤️ ${Number(row.like_count||0)} likes</span><span class="community-set-stat">🔖 ${Number(row.save_count||0)} saves</span>`;
   $('communityPreviewDesc').innerHTML = row.description ? escapeHtml(row.description) : '';
   $('communityPreviewTagSummary').classList.add('hidden');
@@ -9117,6 +9148,20 @@ async function openCommunityPreview(id){
   // Foto cases don't have a `cards` array at all (their content is a
   // CASE_FORMAT script in algo_source) — the card-sample projection below
   // is meaningless for them, so skip it and show a plain explainer instead.
+  if(row.kind === 'reading'){
+    $('communityPreviewSamples').innerHTML = `<div class="community-empty" style="margin-top:14px;">📖 Simulacro cronometrado de Comprensión de lectura del DELE B2 — al importarlo se añade a tu biblioteca de Lectura, listo para hacerlo como simulacro o en modo práctica.</div>`;
+    return;
+  }
+  if(row.kind === 'vocab'){
+    const box = $('communityPreviewSamples');
+    box.innerHTML = `<div class="community-empty" style="margin-top:14px;">🃏 Biblioteca de vocabulario — al importarla se añade a tu 🃏 Vocab como una biblioteca nueva, lista para el juego de emparejar. Cargando muestra…</div>`;
+    fetchCommunityFullDeck(id, 'vocab-preview').then(({data}) => {
+      if(communityPreviewId !== id || !data || !Array.isArray(data.cards)) return;
+      const list = data.cards.slice(0,6).map(c => `<li><strong>${escapeHtml(c.word||'')}</strong> — ${escapeHtml(c.definition_es||'')}</li>`).join('');
+      box.innerHTML = `<div class="community-empty" style="margin-top:14px;text-align:left;">🃏 Al importarla se añade a tu 🃏 Vocab como biblioteca nueva.<ul style="margin:8px 0 0 18px;">${list}</ul>${data.cards.length>6?`<div style="margin-top:6px;opacity:.7">… y ${data.cards.length-6} más</div>`:''}</div>`;
+    }).catch(()=>{});
+    return;
+  }
   if(row.kind === 'photo'){
     $('communityPreviewSamples').innerHTML = `<div class="community-empty" style="margin-top:14px;">📷 Caso de práctica de habla para la Tarea 2 del DELE B2 — al importarlo se añade a tu biblioteca de Foto, listo para jugar.</div>`;
     return;
@@ -9322,6 +9367,8 @@ async function importCommunitySet(communitySetId){
   // Foto cases live in their own library (PHOTO_CASES_KEY), not the main
   // flashcard Sets collection — importing one as a regular "set" would
   // create an inert entry nothing in the app knows how to play.
+  if(data.kind === 'reading'){ await rlImportFromCommunity(data, communitySetId, sb); return; }
+  if(data.kind === 'vocab'){ await vmImportFromCommunity(data, communitySetId, sb); return; }
   if(data.kind === 'photo'){
     if(!confirm(`Add "${data.title}" to your Foto cases?`)) return;
     const id = 'pg-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
@@ -9739,7 +9786,7 @@ function vmRenderGameIntro(){
 function vmRenderLibraryNav(){
   const wrap=$('vmSetCards'); if(!wrap)return; wrap.innerHTML=''; const sets=['__all__',...(vmVocab.some(x=>!String(x.set||x.category||'').trim())?['__unsorted__']:[]),...new Set([...Object.keys(vmSavedSets),...vmVocab.map(x=>String(x.set||x.category||'').trim()).filter(Boolean)])];
   sets.forEach(value=>{const items=vmSetItems(value), ready=items.filter(x=>String(x.word||x.english||'').trim()&&String(x.definition_es||x.spanish||'').trim()).length, card=document.createElement('div');card.className='vm-set-card'+(String($('vmSetSelect')?.value||'__all__')===value?' active':'');
-    const title=document.createElement('strong');title.textContent=value==='__all__'?'Todas las bibliotecas':value==='__unsorted__'?'Sin biblioteca':value;const meta=document.createElement('small');meta.textContent=`${items.length} palabra${items.length===1?'':'s'} · ${ready} lista${ready===1?'':'s'} para estudiar`;const choose=document.createElement('button');choose.className='vm-btn';choose.type='button';choose.textContent='Ver biblioteca';choose.onclick=()=>vmChooseSet(value);const study=document.createElement('button');study.className='vm-btn vm-btn-primary';study.type='button';study.textContent='Estudiar';study.onclick=()=>vmStudySet(value);card.append(title,meta,choose,study);card.onclick=e=>{if(e.target.tagName!=='BUTTON')vmChooseSet(value)};wrap.appendChild(card);
+    const title=document.createElement('strong');title.textContent=value==='__all__'?'Todas las bibliotecas':value==='__unsorted__'?'Sin biblioteca':value;const meta=document.createElement('small');meta.textContent=`${items.length} palabra${items.length===1?'':'s'} · ${ready} lista${ready===1?'':'s'} para estudiar`;const choose=document.createElement('button');choose.className='vm-btn';choose.type='button';choose.textContent='Ver biblioteca';choose.onclick=()=>vmChooseSet(value);const study=document.createElement('button');study.className='vm-btn vm-btn-primary';study.type='button';study.textContent='Estudiar';study.onclick=()=>vmStudySet(value);const pubBtn=(value==='__all__'||value==='__unsorted__'||ready<2)?null:(()=>{const b=document.createElement('button');b.className='vm-btn';b.type='button';b.textContent='🌐 Publicar';b.title='Compartir esta biblioteca en Comunidad';b.onclick=ev=>{ev.stopPropagation();vmPublishLibrary(value);};return b;})();card.append(title,meta,choose,study,...(pubBtn?[pubBtn]:[]));card.onclick=e=>{if(e.target.tagName!=='BUTTON')vmChooseSet(value)};wrap.appendChild(card);
   });
   if(!sets.length)wrap.innerHTML='<div class="vm-muted">Importa o añade vocabulario para crear tu primera biblioteca.</div>';
 }
@@ -9789,6 +9836,59 @@ function vmRenderLibrary(){
     body.appendChild(tr);
   });
   vmRenderMobileCards(visible);
+}
+/* ---------- Comunidad: publicar / importar bibliotecas de vocabulario ----------
+   Reutiliza community_sets (sin SQL nuevo): kind:'vocab', cards = las palabras de UNA biblioteca,
+   title = nombre de la biblioteca. No hay vínculo local: al republicar se busca por (autor, título, kind). */
+function vmPlayable(x){ return !!(String(x.word||x.english||'').trim() && String(x.definition_es||x.spanish||'').trim()); }
+async function vmPublishLibrary(value){
+  const items = vmSetItems(value).map(vmNormalize).filter(vmPlayable);
+  if(items.length < 2){ alert('Esta biblioteca necesita al menos 2 palabras completas (palabra + definición) para publicarse.'); return; }
+  const sb = getSupabase();
+  if(!sb || !currentUser){ alert('Inicia sesión primero — Ajustes → Cuenta y sincronización.'); return; }
+  if(!communityUsername) await loadCommunityProfile();
+  if(!communityUsername){
+    const chosen = prompt('Elige un nombre de usuario para publicar (lo verán otros usuarios):');
+    if(!chosen) return;
+    const res = await saveCommunityUsername(chosen);
+    if(res.error){ alert(res.error); return; }
+  }
+  let droppedImgs = 0;
+  const cards = items.map(x => {
+    let img = String(x.image||'').trim();
+    if(img.startsWith('data:')){ img = ''; droppedImgs++; }   // las imágenes incrustadas inflarían la fila: solo enlaces
+    return {id:x.id, word:x.word, definition_es:x.definition_es, sentence_es:x.sentence_es||'', sentence_en:x.sentence_en||'', image:img, level:x.level||''};
+  });
+  const title = String(value).trim();
+  const row = {owner_id: currentUser.id, username: communityUsername, title, kind:'vocab', cards, card_count: cards.length};
+  let linkedId = null;
+  const { data: existing } = await sb.from('community_sets').select('id').eq('owner_id', currentUser.id).eq('title', title).eq('kind', 'vocab').maybeSingle();
+  if(existing && existing.id){
+    if(!confirm(`Ya tienes «${title}» publicada en Comunidad — ¿actualizarla con tus ${cards.length} palabras actuales?`)) return;
+    linkedId = existing.id;
+  } else if(!confirm(`¿Publicar «${title}» (${cards.length} palabras) en Comunidad? La verán otros usuarios.`)) return;
+  let result;
+  if(linkedId) result = await sb.from('community_sets').update(row).eq('id', linkedId).eq('owner_id', currentUser.id).select('id').maybeSingle();
+  else result = await sb.from('community_sets').insert(row).select('id').maybeSingle();
+  if(result.error){ alert('No se pudo publicar: ' + result.error.message); return; }
+  invalidateCommunityMineCache(); invalidateCommunityFeedCaches();
+  alert((linkedId ? 'Actualizada en Comunidad.' : '¡Publicada en Comunidad!') + (droppedImgs ? `\n\n${droppedImgs} imagen(es) incrustada(s) no se subieron (solo se comparten enlaces de imagen).` : ''));
+}
+async function vmImportFromCommunity(data, communitySetId, sb){
+  const cards = Array.isArray(data.cards) ? data.cards : [];
+  if(!cards.length){ alert('Esta biblioteca no tiene palabras.'); return; }
+  const prefix = 'cv' + String(communitySetId).replace(/-/g,'').slice(0,8);
+  const have = new Set(vmVocab.map(x => String(x.id)));
+  const fresh = cards.filter(c => !have.has(prefix + '-' + c.id));
+  if(!fresh.length){ alert(`«${data.title}» ya está completa en tu vocabulario.`); return; }
+  if(!confirm(`¿Añadir «${data.title}» (${fresh.length} palabra${fresh.length===1?'':'s'}${fresh.length<cards.length?' nuevas':''}) a tu 🃏 Vocab como una biblioteca?`)) return;
+  vmAddImported(cards.map(c => ({...c, id: prefix + '-' + c.id, set: data.title})));
+  try{ await sb.rpc('increment_community_import', { p_set_id: communitySetId }); }catch(e){}
+  const row = communityBrowseCache.find(x => x.id === communitySetId);
+  if(row) row.import_count = Number(row.import_count||0) + 1;
+  closeCommunityPreview();
+  applyCommunitySearchFilter();
+  alert(`Añadido «${data.title}» — lo encuentras en 🃏 Vocab, biblioteca «${data.title}».`);
 }
 function vmParseRows(rows){
   return rows.map((r, i) => {
@@ -10913,8 +11013,9 @@ const RL_TYPE_LABEL = {MC:'Opción múltiple', MATCH:'Correspondencia', FRAGMENT
 const RL_SEED_ID = 'rl-dele-b2-2013-p1';
 const RL_SEED2_ID = 'rl-dele-b2-modelo0-2012';
 const RL_SEED2_FLAG = 'esp2Review_readingSeed2_v1';
-const RL_SEED_TEXT = "EXAM_TITLE: DELE B2 · Modelo 2013 · Prueba 1 (Comprensión de lectura)\nLEVEL: B2\nTIME_MINUTES: 70\nNOTE: Claves deducidas por IA a partir del PDF (no son las oficiales): si alguna te parece dudosa, compárala con las claves de Cervantes.\n\n=== TAREA 1 ===\nTYPE: MC\nTITLE: Turismo espacial\nINSTRUCTIONS: Usted va a leer un texto sobre el turismo espacial. Después debe contestar a las preguntas. Seleccione la opción correcta (a / b / c).\n[TEXT]\n¿Cuánto estaría dispuesto a pagar por vivir la aventura del espacio? Una excursión espacial puede costar 180.000 euros por persona, y el viaje durará unas dos horas, entre ascenso y descenso, incluida la experiencia de flotar como en microgravedad. La empresa estadounidense *Virgin Galactic* afirma superar las 600 reservas para sus vuelos en la nave *SpaceShipTwo*, que está terminando de probar. Los vuelos, que ascenderán a 100 kilómetros de altura, serán inaugurados por su propietario, Richard Branson, presumiblemente este año.\n\nLa alternativa europea llega de la mano de la empresa suiza *Swiss Space Systems* (S-3), que apunta hacia la explotación turística del espacio con un puerto espacial situado en las Islas Canarias. La aspiración de esta empresa es ofrecer la puesta en órbita de satélites con un avión comercial modificado en vez de con un cohete. Si todo sale bien, adaptarán el sistema para embarcar pasajeros y llevarlos hasta los 100 kilómetros de altura. En la filial española de S-3 entienden que, de momento, la empresa estadounidense *Virgin Galactic* va abriendo mercado.\n\nAdemás, este año en S-3 podrían empezar los vuelos parabólicos, una práctica que venía siendo casi exclusiva del entrenamiento de los astronautas profesionales. Se trata de volar en un avión comercial Airbus-300 al que se han eliminado butacas de la parte central. Los afortunados que lo puedan costear flotarán durante un minuto en cada subida y bajada brusca del avión. Desde S3 han declarado: «Como ingeniería, hemos calculado que en la fecha prevista habremos reforzado estructuralmente el avión para poder realizar los vuelos».\n\nLa empresa S3 ha elegido las islas Canarias para su proyecto por la posición geográfica, pues permite tener un acceso al espacio a través del Atlántico con un pasillo aéreo despejado para los lanzamientos sin necesidad de sobrevolar zonas pobladas. En la decisión ha influido también la experiencia española en programas que son aplicables al proyecto de S3, sobre todo para la parte de vuelo atmosférico, una tecnología puntera difícil de encontrar en otra parte del mundo.\n\nEl coste del proyecto de S-3 asciende a 200 millones de euros y S-3 España, que cuenta con el apoyo de las autoridades canarias, contribuye con una inversión de 60 millones. Además hay colaboradores académicos de universidades de Europa y América y la Agencia Europea del Espacio (ESA) es consultora de esta iniciativa.\n\nAunque cien kilómetros de ascenso es mucho, está muy por debajo de la Estación Espacial Internacional, que está a más de 400 kilómetros de altura. Allí se experimentó la presencia de turistas que iban, permanecían siete días y volvían en una de las cápsulas *Soyuz* de la *Agencia Espacial Rusa*. Dejó de ofertarse porque había escasez de naves para los astronautas profesionales. Últimamente, hay iniciativas para explotarla comercialmente convirtiéndola parcialmente en hotel, pero aún deben concretarse.\n[/TEXT]\nQ: En el texto se informa de que la nave SpaceShipTwo...\na) tendrá espacio para unas 600 personas.\nb) será estrenada por Richard Branson.\nc) se mantendrá dos horas a 100 km de altura.\nANSWER: b\nWHY: Los vuelos «serán inaugurados por su propietario, Richard Branson». Las 600 son reservas, y las dos horas son la duración total del viaje.\nQ: Según el texto, actualmente la prioridad de S-3 es...\na) construir el puerto espacial canario.\nb) adelantarse a los estadounidenses.\nc) desarrollar el sistema de lanzamiento de satélites.\nANSWER: c\nWHY: Su aspiración es poner satélites en órbita con un avión modificado; llevar pasajeros solo vendrá «si todo sale bien».\nQ: Los vuelos parabólicos en el Airbus A-300 se utilizarán para realizar...\na) viajes turísticos.\nb) pruebas de ingeniería.\nc) formación de los astronautas.\nANSWER: a\nWHY: Era una práctica de los astronautas, pero ahora «los afortunados que lo puedan costear» flotarán: es turismo.\nQ: En el texto se dice que la empresa S3 ha elegido Canarias debido a...\na) su estratégica localización.\nb) sus condiciones atmosféricas.\nc) la conjunción de rutas aéreas.\nANSWER: a\nWHY: La eligieron «por la posición geográfica»; el pasillo aéreo es despejado, no una conjunción de rutas.\nQ: Sesenta millones es la aportación al proyecto...\na) del gobierno canario.\nb) de la filial española de S3.\nc) de la Agencia Europea del Espacio.\nANSWER: b\nWHY: S-3 España, que cuenta con el apoyo de las autoridades canarias, contribuye con 60 millones.\nQ: Los viajes turísticos a la Estación Espacial Internacional se suspendieron por problemas con...\na) la distancia.\nb) el transporte.\nc) el alojamiento.\nANSWER: b\nWHY: Dejó de ofertarse porque había escasez de naves (transporte) para los astronautas profesionales.\n\n=== TAREA 2 ===\nTYPE: MATCH\nTITLE: El libro que más me influyó en la infancia\nINSTRUCTIONS: Usted va a leer cuatro textos en los que cuatro personas cuentan cuál fue el libro que más les influyó en su infancia. Relacione las preguntas con los textos (A, B, C o D).\n[TEXT A | PABLO]\nCuando les digan que lo audiovisual es enemigo de la lectura, no hagan caso. A través del oído y de las imágenes se puede llegar a descubrir la literatura. Así fue en mi caso. *La isla del tesoro*, mi relato preferido desde los siete años hasta hoy, lo escuché primero en disco antes de leerlo. Y en uno de los tebeos que devoraba semanalmente con apetito insaciable, me encontré con el cuento *El corazón delator*, que sirvió de base a mi pasión de lector. Pero no conviertan esas obras en fetiches de valor universal: si yo tuviese hoy aquella edad, seguro que me iniciaría en la literatura a través de algún juego de videoconsola. Solo una cosa es segura: los libros que nos enganchan en la infancia son los que nos gustan a nosotros, no a los educadores, porque leer es un vicio maravilloso, no una virtuosa necesidad formativa.\n[/TEXT]\n[TEXT B | ÁNGEL]\nLa serie de novelas que me enganchó a la ficción fue la de Tarzán. Debí de leerla con siete u ocho años. Cuando mi madre me apagaba la luz, yo encendía la linterna debajo de las sábanas para seguir leyendo, o bien esperaba hasta que sus pasos se alejaban y oía el televisor. Entonces salía sigilosamente al pasillo y me encerraba en el baño con mi libro. Hasta donde me alcanza la memoria, la primera imagen narrativa fuerte que guardo de la serie es cuando la mona que va a adoptar a Tarzán lo encuentra y lo coge en brazos. Si la marca del buen narrador es ser capaz de encarnar un personaje o una emoción en una acción o una actitud que se grabe para siempre en los espíritus, está claro que, conmigo, el autor lo consiguió. Desde entonces, no he dejado de leer.\n[/TEXT]\n[TEXT C | JORGE]\nHubo un libro en mi infancia que me produjo una vivísima impresión. Empecé a leerlo el día de mi primera comunión, a los siete años. Con los altibajos típicos de un acontecimiento excitante en el que puedes pasar muy fácilmente del júbilo exacerbado a la rabieta total, a media tarde escapé disgustado del bullicio del banquete familiar, me encerré en mi cuarto y me puse a leer un libro que me había traído un pariente. Se trataba de una versión extensa, en tapa dura, de *La isla misteriosa*, de Julio Verne. Seguí leyendo, sorprendido, intrigado, expectante y confuso, y cuando al cabo de un rato llamaron a la puerta del cuarto reclamando mi presencia, el disgusto se había desvanecido por completo, y solo tenía ganas de seguir con la lectura, pues la historia me había atrapado desde el principio. Ese fue mi primer y muy inesperado encuentro con la literatura.\n[/TEXT]\n[TEXT D | RAÚL]\nEl primer libro que dejó un rastro indeleble en mí fue, sin el menor asomo de duda, *El cartero del Rey*, de Tagore. Tuve una madre con la sana costumbre de leerme en voz alta cuando yo era muy chico, y ese fue el libro que, aún recuerdo, me encantaba que me leyera una y otra vez cuando yo apenas había aprendido a leer. Todavía permanece, por otro lado, vívida en mí, la impresión que me causó la lectura de *La vuelta al mundo en 80 días*. Creo que su lectura marcó mi carácter viajero. Desde entonces supe que había un universo vasto y maravilloso que me aguardaba y en el que merecía la pena inmiscuirse. La lectura supuso, para el niño solitario y cerrado que yo era antes, la vía por la que podía conectarme con el mundo.\n[/TEXT]\nQ: ¿Quién dice que su primer libro se lo regaló un familiar?\nANSWER: C\nWHY: Jorge: «un libro que me había traído un pariente».\nQ: ¿Quién dice que se inició en la literatura con una colección?\nANSWER: B\nWHY: Ángel: «la serie de novelas» de Tarzán (una colección de libros).\nQ: ¿Quién dice que de pequeño solía leer a escondidas?\nANSWER: B\nWHY: Ángel leía con la linterna bajo las sábanas o encerrado en el baño.\nQ: ¿Quién dice que el libro que más le influyó lo escuchó muchas veces?\nANSWER: D\nWHY: Raúl: su madre le leía *El cartero del Rey* «una y otra vez». Pablo escuchó su libro en disco, pero no dice que fuera muchas veces.\nQ: ¿Quién se aficionó a la literatura en medio de una celebración?\nANSWER: C\nWHY: Jorge empezó a leer el día de su primera comunión, durante el banquete.\nQ: ¿Quién dice que era un niño introvertido?\nANSWER: D\nWHY: Raúl: «el niño solitario y cerrado que yo era antes».\nQ: ¿Quién dice que el primer libro que leyó le enganchó desde las primeras páginas?\nANSWER: C\nWHY: Jorge: «la historia me había atrapado desde el principio».\nQ: ¿Quién recuerda vivamente una escena de su historia favorita?\nANSWER: B\nWHY: Ángel recuerda la imagen de la mona que encuentra a Tarzán y lo coge en brazos.\nQ: ¿Quién estaba enfadado cuando empezó a leer su primer libro?\nANSWER: C\nWHY: Jorge escapó «disgustado» del banquete y se encerró a leer.\nQ: ¿Quién se aficionó a la lectura a través de un cómic?\nANSWER: A\nWHY: Pablo: en uno de los tebeos (cómics) encontró el cuento que fue la base de su pasión de lector.\n\n=== TAREA 3 ===\nTYPE: FRAGMENTS\nTITLE: Fundéu, la «academia de los periodistas»\nINSTRUCTIONS: Lea el siguiente texto, del que se han extraído seis fragmentos. A continuación lea los ocho fragmentos propuestos (A - H) y decida en qué lugar del texto hay que colocar cada uno de ellos. Hay dos fragmentos que no tiene que elegir.\n[TEXT]\nEl lenguaje es un instrumento esencial del periodismo y el periodismo es un vehículo indispensable de la lengua. Por su difusión, más amplia e inmediata que la de la literatura, los medios de comunicación son los transmisores más eficaces de los usos lingüísticos y uno de los elementos que más influye en la constante formación del idioma. Una responsabilidad compartida ahora por miles de personas, cuyo mensaje tiene gran eco en las redes sociales. [[17]].\n\nLa Fundación del Español Urgente (Fundéu) es una organización que inició su actividad en 2005. [[18]]. La fundación cuenta con la ayuda de la Real Academia Española (RAE) cuyo director es, a su vez, el presidente de la Fundéu.\n\nUn equipo de filólogos y periodistas revisa los medios de comunicación y resuelve las dudas que surgen sobre el uso diario de la lengua. [[19]]. Sin embargo, su método de trabajo le da autoridad para recomendar el buen uso con una mayor agilidad que la RAE.\n\nEl equipo de Fundéu resuelve todos los días consultas a través de diversos canales: desde el correo hasta el teléfono, pasando, cómo no, por las redes sociales. [[20]]. También se examina la prensa en busca de las palabras y expresiones que la actualidad pone de moda, porque las palabras tienen sus momentos de «fama» en función de las necesidades informativas. [[21]]. En ella, se debaten los temas más complejos para determinar una resolución acordada entre todos, que después se publica en su página web.\n\n[[22]]. Es, precisamente, ahí donde Fundéu sirve de enlace con la Real Academia Española, como fuente de información sobre nuevos términos o usos lingüísticos y como campo de pruebas para valorar la conveniencia de hacer correcciones o incorporaciones en las obras académicas.\n[/TEXT]\nFRAGMENT A: Conscientes de que el mal uso del lenguaje desautoriza el contenido, solicitan ayuda sobre temas lingüísticos.\nFRAGMENT B: Las dudas no solo provienen de profesionales cuya herramienta de trabajo es la lengua, sino también de particulares que tienen interés por su uso.\nFRAGMENT C: En los años setenta, el objetivo fue la redacción de un manual de estilo para periodistas que dio origen al Departamento de Español Urgente.\nFRAGMENT D: A diferencia de la RAE, la Fundéu no ofrece normas definitivas sobre lo que es correcto y lo que no.\nFRAGMENT E: Su objetivo es desarrollar el buen uso del español en los medios y sirve de guía lingüística a todos los hablantes, tanto en España como en Hispanoamérica.\nFRAGMENT F: Las cuentas de RAE y Fundéu en las redes sociales tienen gran seguimiento, provocan intensos debates e incluso tienen imitadores.\nFRAGMENT G: Algunas cuestiones no quedan resueltas en la redacción y son analizadas por el Consejo Asesor, que se reúne semanalmente.\nFRAGMENT H: Los términos que provocan más dudas son estudiados en la reunión matinal de la redacción.\nGAP 17: A\nWHY: Sigue a «responsabilidad compartida por miles de personas»: esas personas, conscientes de que el mal uso desautoriza el contenido, piden ayuda.\nGAP 18: E\nWHY: Habla de la organización que inició su actividad en 2005 y su objetivo. El fragmento C (años setenta) contradice la fecha.\nGAP 19: D\nWHY: Lo contrasta con «Sin embargo, su método de trabajo le da autoridad…»: no da normas definitivas como la RAE.\nGAP 20: B\nWHY: Tras los canales de consulta (correo, teléfono, redes), explica quién hace las consultas: profesionales y particulares.\nGAP 21: H\nWHY: «En ella» se refiere a la reunión (femenino): la reunión matinal de la redacción, donde se debaten los temas complejos.\nGAP 22: G\nWHY: «Ahí» remite al Consejo Asesor, que analiza lo no resuelto en la redacción y sirve de enlace con la RAE.\n\n=== TAREA 4 ===\nTYPE: CLOZE\nTITLE: Mis cartas\nINSTRUCTIONS: Lea el texto y rellene los huecos con la opción correcta (a / b / c).\n[TEXT]\nCualquiera podría pensar que hay métodos más rápidos y sencillos para emitir las quejas a la administración, pero yo estoy convencido [[23]] que las cartas son el más adecuado. Al recibir una carta, el conserje se siente justificado y, cuando [[24]] la carta sobre la mesa del despacho del director, es un hombre que participa en una cadena aparentemente útil. Trasladar la carta desde la conserjería al despacho del director le [[25]] ponerse de pie, caminar unos metros, golpear la puerta del despacho, decir «Con permiso» y depositar la carta entre el calendario y el pisapapeles. Por lo demás, el director del servicio, al leer una carta, [[26]] sea una carta de protesta, siente alguna clase de satisfacción: el servicio deja de ser abstracto, de pronto [[27]] en algo material y tangible.\n\nPor ejemplo, el director de la compañía eléctrica. Como la electricidad es algo inmaterial y, en cierto modo, abstracto, sobre [[28]] generalmente no nos acordamos [[29]] que un corte de luz provoca que volvamos al viejo sistema de las velas, es comprensible que el director general de la compañía [[30]] como el distribuidor de alguna clase de bien espiritual.\n\nEscribí al director general de la compañía de la luz a causa del contador. El contador que contaba los pasos imaginarios de la electricidad giraba como una peonza y los números rojos y blancos saltaban como conejos. No usé estas expresiones en mi carta, porque [[31]] habrían sido consideradas excesivamente literarias. El director general fue muy gentil: me envió a un inspector. Era un hombrecito de aspecto asombrado e inquieto. Traía una maletita negra bajo el brazo, [[32]] sacó una linterna de metal y una pinza que me parecieron extraordinariamente grandes [[33]] un hombre tan pequeño. Con seguridad, él sentía lo mismo, porque su manejo [[34]] resultaba bastante complicado. Cortamos la luz y nos dirigimos hacia la caja de contadores, que está en el oscuro recibidor de mi apartamento, adosada a la pared, a una considerable altura. [[35]] un paisaje de los Alpes suizos sobre la tapa, para que le [[36]] un toque de exotismo al recibidor. De modo que cuando alguien entra en mi casa, divisa solo las colinas nevadas sobre un fondo azul y no tiene por qué pensar en electricidad y botones.\n[/TEXT]\nGAP 23: en | de | a => b\nWHY: Estar convencido DE algo.\nGAP 24: haya puesto | pone | ponga => c\nWHY: «Cuando» + acción futura/hipotética → subjuntivo: cuando ponga la carta.\nGAP 25: exige | obliga | impulsa => a\nWHY: «Exigir» va directamente con infinitivo (le exige ponerse); «obligar» e «impulsar» necesitarían «a».\nGAP 26: como si | puesto que | aunque => c\nWHY: «Aunque sea una carta de protesta»: valor concesivo con subjuntivo.\nGAP 27: se vuelve | se convierte | se pone => b\nWHY: Convertirse EN algo material y tangible.\nGAP 28: el que | la que | lo que => b\nWHY: Antecedente «la electricidad»: sobre la que no nos acordamos.\nGAP 29: antes de | tan pronto | hasta => c\nWHY: «No nos acordamos hasta que…»: límite temporal con «que».\nGAP 30: se siente | se sienta | se sentirá => b\nWHY: «Es comprensible que» exige subjuntivo.\nGAP 31: a lo mejor | puede que | es normal que => a\nWHY: «A lo mejor» + indicativo/condicional (habrían sido); las otras exigen subjuntivo.\nGAP 32: de que | de cuya | de la que => c\nWHY: De la maletita sacó… → «de la que sacó».\nGAP 33: a | para | por => b\nWHY: «Grandes para un hombre tan pequeño»: comparación de adecuación.\nGAP 34: lo | se | le => c\nWHY: «Su manejo le resultaba complicado» (a él): complemento indirecto.\nGAP 35: Cubrí | Coloqué | Oculté => b\nWHY: «Coloqué un paisaje sobre la tapa»; cubrir/ocultar exigirían la tapa como complemento directo.\nGAP 36: diera | daría | dé => a\nWHY: «Para que» + subjuntivo imperfecto por la secuencia con «coloqué».\n";
-const RL_SEED2_TEXT = "EXAM_TITLE: DELE B2 · Modelo 0 oficial (2012) · Prueba 1 (Comprensión de lectura)\nLEVEL: B2\nTIME_MINUTES: 70\nNOTE: Modelo de examen oficial del Instituto Cervantes (Examen 00, versión 1) con sus claves oficiales.\n\n=== TAREA 1 ===\nTYPE: MC\nTITLE: Basura electrónica\nSOURCE: Adaptado de www.lanacion.com.ar. Argentina\nINSTRUCTIONS: Usted va a leer un texto sobre la basura electrónica. Después, debe contestar a las preguntas. Seleccione la respuesta correcta (a / b / c).\n[TEXT]\n*Débora Slotnisky*\n\nEn su informe, de marzo de este año, *Minería y basura electrónica*, Greenpeace Argentina calcula que el 50% de los residuos de aparatos eléctricos y electrónicos se abandonan en hogares y oficinas, que el 40% se entierra o se amontona en basurales y que solo un 10% se procesa como residuos. Si se suman heladeras, microondas, televisores y videos, se estima que los argentinos desechan unos 6 kg de este tipo de aparatos por habitante cada año. «Esto representa un derroche de recursos que podrían recuperarse, además de una alta fuente de contaminación», destaca el documento.\n\nDada la magnitud del problema, Greenpeace está impulsando una ley nacional de gestión de residuos de aparatos eléctricos y electrónicos que, según Consuelo Bilbao, coordinadora de Greenpeace Argentina, «obligaría a los fabricantes a hacerse cargo de los residuos de sus propios productos. Además, estipularía la creación de un sistema de gestión de la basura electrónica que permitiría a los consumidores deshacerse de sus aparatos, de manera segura, una vez finalizada su vida útil».\n\nMientras se resuelve el futuro de la ley impulsada por Greenpeace, es importante saber que muchos de los aparatos desechados se pueden reutilizar, restaurar o reciclar. Por ejemplo, Te Reciclo es una organización que recolecta productos electrónicos a domicilio y retira aquellos que encuentra tirados en la calle con la intención de repararlos y venderlos después a muy bajo costo. «Especialmente insistimos en que trabajamos puerta a puerta, sin cargo alguno, porque ni las empresas ni los particulares quieren trasladar estos equipos de un lugar a otro», explica Ravettini, miembro del proyecto.\n\nLa Fundación Equidad es otra ONG que acepta donaciones de todo tipo de equipos sin importar el modelo o su estado. En su taller de reciclaje estos residuos se transforman en computadoras listas para ser donadas a escuelas públicas de todo el país. En este taller también se forma, en el área del tratamiento de la basura tecnológica, a personas excluidas del mercado laboral.\n\nEntre los aparatos electrónicos más utilizados, los teléfonos celulares son los que poseen la tasa más alta de recuperación: más del 90% de un celular puede ser reciclado. Ya hay operadoras que recolectan las baterías, uno de los componentes más contaminantes. Por ejemplo, Personal recibe baterías usadas en sus agencias y las clasifica en reutilizables y no reutilizables. Además, esta empresa organiza eventos en los que entrega un regalo sorpresa por cada batería que recibe.\n\nSe estima que los aparatos tecnológicos están formados por un 25% de componentes reutilizables, un 72% de reciclables y un 3% de elementos tóxicos. Computadoras, celulares, televisores, entre otros muchos objetos cotidianos abandonados en cualquier rincón, pueden tener un mejor destino. Solo considerando los tres metales más valiosos presentes en un celular (oro, plata y cobre), si tenemos en cuenta que este año han sido descartados 10 millones de aparatos en la Argentina, se calcula que se han perdido, este año, 15 millones de dólares.\n[/TEXT]\nQ: Según el informe publicado por la organización Greenpeace, en Argentina…\na) el 50% de la población guarda aparatos eléctricos viejos.\nb) un 40% de los desechos tecnológicos recibe tratamiento.\nc) cada persona genera 6 kg de residuos electrónicos al año.\nANSWER: c\nWHY: Los argentinos desechan unos 6 kg de aparatos por habitante cada año. El 50% es de residuos abandonados, no de personas, y el 40% se entierra o se amontona.\nQ: Según el texto, la ley impulsada por Greenpeace Argentina…\na) impone sanciones a los fabricantes de tecnología.\nb) implica la creación de empresas de reciclaje.\nc) aún no ha sido aprobada.\nANSWER: c\nWHY: «Mientras se resuelve el futuro de la ley…»: todavía no se ha aprobado. Obligaría a los fabricantes a gestionar sus residuos, pero no habla de sanciones.\nQ: En el texto se dice que la organización Te Reciclo…\na) arregla aparatos electrónicos en desuso.\nb) cobra por retirar los aparatos tecnológicos.\nc) estudia el tratamiento de la basura tecnológica.\nANSWER: a\nWHY: Recolecta aparatos con la intención de repararlos y venderlos. El servicio puerta a puerta es sin cargo.\nQ: El texto nos informa de que en el taller de reciclaje de la Fundación Equidad…\na) se recolectan computadoras viejas de centros educativos.\nb) se reparan sin coste alguno equipos averiados.\nc) se ofrece formación a desempleados.\nANSWER: c\nWHY: Se forma a «personas excluidas del mercado laboral». Las computadoras se donan a escuelas, no se recogen de ellas.\nQ: Según el texto, existen algunas compañías de telefonía celular que…\na) se encargan del 90% del reciclaje del celular.\nb) recogen baterías desechadas.\nc) compran baterías en desuso.\nANSWER: b\nWHY: Hay operadoras que recolectan las baterías (por ejemplo, Personal las recibe en sus agencias). El 90% es lo que se puede reciclar de un celular.\nQ: La autora del texto dice que en Argentina la basura electrónica…\na) es cada vez más abundante.\nb) se amontona en cualquier lugar.\nc) supone pérdidas económicas.\nANSWER: c\nWHY: Calcula que este año se han perdido 15 millones de dólares en metales valiosos de los celulares descartados.\n\n=== TAREA 2 ===\nTYPE: MATCH\nTITLE: Cómo publiqué mi primer libro\nSOURCE: Adaptado de http://cultura.elpais.com. España\nINSTRUCTIONS: Usted va a leer cuatro textos en los que cuatro escritores recuerdan cómo publicaron su primer libro. Relacione las preguntas con los textos (A, B, C o D).\n[TEXT A | RAFAEL]\nEra un periodista joven e inexperto cuando, en 1995, entregué mi primera novela a la editorial Planeta. Se llamaba *Invierno en la torre*, y el diario *El Mercurio* publicó una reseña que se llamaba «A patadas con las palabras» y decía que la condena para el autor era pasar cinco años y un día sin escribir.\n\nEn un programa de televisión donde había críticos y escritores preguntaron: «¿Cuál es el peor escritor de Chile?», y una señorita dijo: «Rafael Gumucio». Me quedé bloqueado, pero decidí no tirar la toalla y al año siguiente escribí *Memorias prematuras*, y dije: «Bueno, si está mal, es el final de todo».\n\nPero hubo críticas halagüeñas y ahí empezó mi carrera real. Pensar que publicar un libro te transforma en escritor es lo mismo que pensar que cuando eres padre por primera vez te transformas en padre. Es algo que vas a tener que demostrarte a ti mismo todos los días.\n[/TEXT]\n[TEXT B | ALBERTO]\nConseguí mi primer contrato porque el escritor Antonio Skármeta, a cuyo taller asistía, le habló con admiración de un texto mío a un editor de Planeta. El editor me citó en un café y me hizo firmar un contrato en una servilleta. Fue como existir antes de existir. Tardé tanto en escribir esa novela que antes escribí un cuento, *Sobredosis*, con el que me presenté a un premio. Es muy importante cómo se lanza un escritor y en ese sentido yo siento que sobreviví a pesar de todo. La fiesta de lanzamiento se hizo en una discoteca, con actrices y gente famosa. Aunque en un programa de televisión la crítica fue atroz, el libro se agotó en cuatro días. Si bien me importaba no ser aceptado, tampoco me destrozó porque yo quería ser director de cine. Y entonces me envalentonaba, y pensaba: «¿Quieren pelear? Vamos a pelear».\n[/TEXT]\n[TEXT C | MARIANA]\nMi familia creía que yo merecía el Nobel, y para demostrarles que estaban equivocados junté diez cuentos, los presenté a un certamen y resulta que gané. Después le dejé el manuscrito de mi primera novela a un colega de trabajo que conocía al editor de Planeta. Al tiempo, recibí un correo electrónico diciendo que me iban a publicar. Se llamó *El núcleo del disturbio*, se publicó en 2002, y salieron algunas reseñas buenas. Pero fue devastador. Para el lanzamiento del libro me llevaron a un programa de televisión y un periodista me preguntó si yo estaba con la línea de los escritores autorreferenciales o narrativistas, y yo no tenía idea de qué era eso, entonces di una respuesta muy ignorante: «Bueno, me gustan las dos». Durante mucho tiempo ese libro me dio vergüenza. El segundo es de 2009, para que veas el tamaño del trauma.\n[/TEXT]\n[TEXT D | RICARDO]\nEn 1998 trabajaba como profesor de filosofía y me habían destinado a un instituto de Oviedo. Una noche en que tenía una hora libre, subí a mi departamento y me encontré a Benito García Noriega ojeando unos papeles. Eran unas galeradas del *Viaje sentimental* de Laurence Sterne. Descubrimos dos cosas: que él, aparte de catedrático de Filosofía, era el dueño y editor de KRK, y que yo, aparte de un profesor interino del sistema público, había escrito una novela que había presentado a un premio. Benito me pidió que le mandara el manuscrito. Se lo dejé un viernes por la tarde y el sábado por la mañana me llamó entusiasmado. En febrero de 1999, KRK publicó *La filosofía en invierno*. El libro pasó desapercibido. Hoy no solo ha conocido una segunda edición en KRK, sino que ha sido traducido al francés, lo cual no deja de causarme asombro.\n[/TEXT]\nQ: ¿Quién dice que antes de que escribiera su primera novela ya sabía que se la iban a publicar?\nANSWER: B\nWHY: Alberto firmó el contrato antes de escribir la novela («existir antes de existir»).\nQ: ¿Quién dice que su primera novela la editó un compañero de trabajo?\nANSWER: D\nWHY: Ricardo se encontró con Benito, colega y catedrático de su instituto, que resultó ser el editor de KRK y publicó su novela.\nQ: ¿Quién dice que un periódico publicó una mala crítica de su primer libro?\nANSWER: A\nWHY: Rafael: el diario El Mercurio publicó una reseña negativa.\nQ: ¿Quién dice que para promocionar su novela se organizó un evento?\nANSWER: B\nWHY: Alberto: la fiesta de lanzamiento en una discoteca.\nQ: ¿Quién dice que tardó mucho en escribir su segunda novela?\nANSWER: C\nWHY: Mariana: la primera es de 2002 y la segunda de 2009.\nQ: ¿Quién dice que antes de publicar su primera novela ya había recibido un premio?\nANSWER: C\nWHY: Mariana presentó diez cuentos a un certamen y ganó. Alberto solo se presentó a un premio, sin decir que lo ganara.\nQ: ¿Quién dice que su segunda novela tuvo mejores críticas que la primera?\nANSWER: A\nWHY: Rafael: con su segundo libro «hubo críticas halagüeñas».\nQ: ¿Quién dice que su primera novela tuvo escasa repercusión?\nANSWER: D\nWHY: Ricardo: «El libro pasó desapercibido».\nQ: ¿Quién dice que para promocionar su primer libro fue a un programa de televisión?\nANSWER: C\nWHY: Mariana: para el lanzamiento la llevaron a un programa de televisión.\nQ: ¿Quién dice que su primer libro se vendió muy bien?\nANSWER: B\nWHY: Alberto: «el libro se agotó en cuatro días».\n\n=== TAREA 3 ===\nTYPE: FRAGMENTS\nTITLE: Los videojuegos como arte (David Cuen)\nSOURCE: Adaptado de www.bbc.co.uk\nINSTRUCTIONS: Lea el siguiente texto, del que se han extraído seis fragmentos. A continuación lea los ocho fragmentos propuestos (A-H) y decida en qué lugar del texto hay que colocar cada uno de ellos. Hay dos fragmentos que no tiene que elegir.\n[TEXT]\nDe cada diez veces que aparece una noticia relacionada con un videojuego en un medio de comunicación, nueve son para decir algo malo. Casi con toda seguridad hablarán de su violencia, discutirán su papel educativo o destacarán las ganancias millonarias que genera esta maléfica industria. [[17]]\n\nPero a pesar de que todavía somos muy pocos los que consideramos que los videojuegos son una forma de arte, al menos nuestra opinión ya empieza a ser conocida en distintos ambientes.\n\n[[18]] En primer lugar, tienen mucho que ver con el arte narrativo; muchos videojuegos cuentan una historia de principio a fin utilizando una gran variedad de técnicas y procedimientos narrativos. En segundo lugar, también tienen relación con las artes visuales. [[19]] Y, por último, también parece evidente su relación con la música: la música que aparece en algunos videojuegos y la calidad de la edición de sonido no tienen nada que envidiar a lo que solemos encontrar en el cine.\n\n[[20]] Por ejemplo, la Academia Británica de las Artes Cinematográficas y de la Televisión (BAFTA, por sus siglas en inglés) premia cada año a los mejores videojuegos y otorga premios, entre otros, a la mejor música original, al uso de audio de mayor calidad o a las mayores innovaciones tecnológicas. A pesar de estos datos, quienes consideran que los videojuegos nunca serán un arte argumentan que la experiencia del entretenimiento digital jamás podrá compararse con la del cine. [[21]]\n\nEs evidente que no todos los videojuegos pueden ser considerados obras de arte, pero me parece que los últimos avances en este medio son tan espectaculares que algunos deberían ser reconocidos unánimemente como arte. Al igual que un libro lleva al lector a un mundo solo alcanzable por el poder de su imaginación o que una película entretiene y a la vez origina una reflexión, un videojuego abre la puerta a un mundo virtual en el que se produce una interacción casi mágica entre la historia y el jugador.\n\n[[22]] Para un jugador como yo los videojuegos son un arte, aunque la mayoría siga considerándolos una pérdida de tiempo.\n[/TEXT]\nFRAGMENT A: Los diseñadores de juegos recrean, a veces con mucho «arte», épocas, costumbres y elementos de la vida real o de la ficción.\nFRAGMENT B: Esta posibilidad de interactuar es lo que diferencia a los videojuegos de otras artes.\nFRAGMENT C: Y es que en escasísimas ocasiones el entretenimiento digital es tratado como un arte, como una expresión cultural propia de nuestro tiempo.\nFRAGMENT D: Sin embargo, su teoría es que los videojuegos son una forma de arte que debe ser valorada como tal.\nFRAGMENT E: Por fortuna es en el mundo del cine donde ya se empieza a reconocer la dimensión artística de los videojuegos.\nFRAGMENT F: En cambio, algunos de ellos cuentan una historia de principio a fin, con un hilo narrativo muy definido.\nFRAGMENT G: Para ellos, la mayoría de los jugadores de videojuegos lo único que hace es jugar, perder el tiempo jugando.\nFRAGMENT H: Sin entrar a discutir si son arte o no, lo que nadie puede negar es que los videojuegos contienen elementos de otras artes.\nGAP 17: C\nWHY: Retoma «nueve [noticias] son para decir algo malo»: «Y es que» explica que casi nunca se trata el videojuego como arte.\nGAP 18: H\nWHY: Introduce la enumeración «En primer lugar… En segundo lugar… Por último…» de los elementos de otras artes.\nGAP 19: A\nWHY: Sigue a «artes visuales»: los diseñadores recrean épocas y elementos con «arte».\nGAP 20: E\nWHY: Abre el párrafo del cine y el «Por ejemplo» del premio BAFTA, que reconoce la dimensión artística.\nGAP 21: G\nWHY: «Para ellos» remite a quienes dicen que nunca serán arte; cierra su argumento.\nGAP 22: B\nWHY: «Esta posibilidad de interactuar» recoge la «interacción casi mágica» del párrafo anterior.\n\n=== TAREA 4 ===\nTYPE: CLOZE\nTITLE: Cómo me deshice de quinientos libros (Augusto Monterroso)\nSOURCE: Adaptado de Cuentos. Augusto Monterroso. Guatemala\nINSTRUCTIONS: Lea el texto y rellene los huecos con la opción correcta (a / b / c).\n[TEXT]\nHace varios años leí un ensayo de no recuerdo qué autor inglés en el que este contaba las dificultades que se le presentaron para deshacerse de un paquete de libros que por [[23]] motivo quería conservar en su biblioteca. Ahora bien, en el curso de mi existencia he podido observar que entre los intelectuales es corriente oír la queja de que los libros terminan [[24]] sacarlos de sus casas. Yo no he estado, y probablemente no lo estaré jamás, en este último extremo; pero nunca [[25]] imaginar que algún día me encontraría en el del ensayista inglés y que tendría que luchar por desprenderme de quinientos volúmenes.\n\nTrataré [[26]] contar mi experiencia. De pasada diré que es probable que esta historia [[27]] a muchos. No importa. La verdad es que en determinado momento de su vida, o uno conoce demasiada gente (escritores), o a uno lo conoce demasiada gente (escritores), o uno se da cuenta de que [[28]] ha tocado vivir en una época en que se editan demasiados libros. Llega el momento en que tus amigos escritores te regalan tantos libros (aparte de los que generosamente te pasan para leer [[29]] inéditos) que necesitarías dedicar todos los días del año para enterarte de sus interpretaciones del mundo y de la vida. El hecho es que desde hace veinte años mi afición por la lectura se vino [[30]] con el hábito de comprar libros.\n\nPor ese tiempo, di en la torpeza de visitar las librerías de viejo. Cuando uno empieza a sentir la atracción [[31]] esos establecimientos llenos de polvo, el placer que proporcionan los libros ha empezado a degenerar en la manía de comprarlos, y esta a su vez en la vanidad de adquirir algunos raros para asombrar a los amigos o a los simples conocidos.\n\n¿Cómo tiene lugar este proceso? Un día uno [[32]] tranquilo leyendo en su casa cuando llega un amigo y le dice: «¡Cuántos libros tienes!». Eso le suena a uno como si el amigo le [[33]]: «¡Qué inteligente eres!», y el mal está hecho. Lo demás, ya se sabe. [[34]] pone uno a contar los libros por cientos, luego por miles, y a sentirse cada vez más inteligente. Como a medida que pasan los años ([[35]] se sea un verdadero infeliz idealista) uno cuenta con más posibilidades económicas, uno ha recorrido más librerías y, naturalmente, uno se [[36]] en escritor, uno posee tal cantidad de libros que ya no sólo eres inteligente: en el fondo eres un genio.\n\nAsí es la vanidad esta de poseer muchos libros.\n[/TEXT]\nGAP 23: cualquier | ningún | ninguno => b\nWHY: «Por ningún motivo»: ninguno se apocopa a «ningún» ante sustantivo masculino.\nGAP 24: por | para | en => a\nWHY: «Terminar por + infinitivo»: acabar haciendo algo.\nGAP 25: hubiera podido | habré podido | pudiera => a\nWHY: «Nunca hubiera podido imaginar que algún día me encontraría…»: hipótesis irreal del pasado.\nGAP 26: a | en | de => c\nWHY: «Tratar de + infinitivo»: intentar hacer algo.\nGAP 27: irritaría | irrita | irrite => c\nWHY: «Es probable que» exige subjuntivo.\nGAP 28: le | se | lo => a\nWHY: «Le ha tocado vivir»: complemento indirecto del verbo tocar.\nGAP 29: pero | aún | ya => b\nWHY: «Aún inéditos»: todavía no publicados.\nGAP 30: contaminar | contaminando | contaminado => b\nWHY: «Se vino contaminando»: venir + gerundio expresa un proceso gradual.\nGAP 31: para | con | por => c\nWHY: «La atracción por algo».\nGAP 32: es | se pone | está => c\nWHY: «Está tranquilo leyendo»: estado temporal con gerundio.\nGAP 33: diría | dijera | decía => b\nWHY: «Como si» exige imperfecto de subjuntivo: como si el amigo le dijera.\nGAP 34: Se | Le | Lo => a\nWHY: «Se pone uno a contar»: ponerse a + infinitivo, con «se» reflexivo.\nGAP 35: de ahí que | salvo si | a menos que => c\nWHY: «A menos que se sea»: condición negativa con subjuntivo.\nGAP 36: ha vuelto | ha convertido | ha hecho => b\nWHY: «Uno se ha convertido en escritor»: convertirse en + sustantivo.\n";
+const RL_SEED_TEXT = "EXAM_TITLE: DELE B2 · Modelo 2013 · Prueba 1 (Comprensión de lectura)\nLEVEL: B2\nTIME_MINUTES: 70\nSHUFFLE: off\nNOTE: Claves deducidas por IA a partir del PDF (no son las oficiales): si alguna te parece dudosa, compárala con las claves de Cervantes.\n\n=== TAREA 1 ===\nTYPE: MC\nTITLE: Turismo espacial\nINSTRUCTIONS: Usted va a leer un texto sobre el turismo espacial. Después debe contestar a las preguntas. Seleccione la opción correcta (a / b / c).\n[TEXT]\n¿Cuánto estaría dispuesto a pagar por vivir la aventura del espacio? Una excursión espacial puede costar 180.000 euros por persona, y el viaje durará unas dos horas, entre ascenso y descenso, incluida la experiencia de flotar como en microgravedad. La empresa estadounidense *Virgin Galactic* afirma superar las 600 reservas para sus vuelos en la nave *SpaceShipTwo*, que está terminando de probar. Los vuelos, que ascenderán a 100 kilómetros de altura, serán inaugurados por su propietario, Richard Branson, presumiblemente este año.\n\nLa alternativa europea llega de la mano de la empresa suiza *Swiss Space Systems* (S-3), que apunta hacia la explotación turística del espacio con un puerto espacial situado en las Islas Canarias. La aspiración de esta empresa es ofrecer la puesta en órbita de satélites con un avión comercial modificado en vez de con un cohete. Si todo sale bien, adaptarán el sistema para embarcar pasajeros y llevarlos hasta los 100 kilómetros de altura. En la filial española de S-3 entienden que, de momento, la empresa estadounidense *Virgin Galactic* va abriendo mercado.\n\nAdemás, este año en S-3 podrían empezar los vuelos parabólicos, una práctica que venía siendo casi exclusiva del entrenamiento de los astronautas profesionales. Se trata de volar en un avión comercial Airbus-300 al que se han eliminado butacas de la parte central. Los afortunados que lo puedan costear flotarán durante un minuto en cada subida y bajada brusca del avión. Desde S3 han declarado: «Como ingeniería, hemos calculado que en la fecha prevista habremos reforzado estructuralmente el avión para poder realizar los vuelos».\n\nLa empresa S3 ha elegido las islas Canarias para su proyecto por la posición geográfica, pues permite tener un acceso al espacio a través del Atlántico con un pasillo aéreo despejado para los lanzamientos sin necesidad de sobrevolar zonas pobladas. En la decisión ha influido también la experiencia española en programas que son aplicables al proyecto de S3, sobre todo para la parte de vuelo atmosférico, una tecnología puntera difícil de encontrar en otra parte del mundo.\n\nEl coste del proyecto de S-3 asciende a 200 millones de euros y S-3 España, que cuenta con el apoyo de las autoridades canarias, contribuye con una inversión de 60 millones. Además hay colaboradores académicos de universidades de Europa y América y la Agencia Europea del Espacio (ESA) es consultora de esta iniciativa.\n\nAunque cien kilómetros de ascenso es mucho, está muy por debajo de la Estación Espacial Internacional, que está a más de 400 kilómetros de altura. Allí se experimentó la presencia de turistas que iban, permanecían siete días y volvían en una de las cápsulas *Soyuz* de la *Agencia Espacial Rusa*. Dejó de ofertarse porque había escasez de naves para los astronautas profesionales. Últimamente, hay iniciativas para explotarla comercialmente convirtiéndola parcialmente en hotel, pero aún deben concretarse.\n[/TEXT]\nQ: En el texto se informa de que la nave SpaceShipTwo...\na) tendrá espacio para unas 600 personas.\nb) será estrenada por Richard Branson.\nc) se mantendrá dos horas a 100 km de altura.\nANSWER: b\nWHY: Los vuelos «serán inaugurados por su propietario, Richard Branson». Las 600 son reservas, y las dos horas son la duración total del viaje.\nQ: Según el texto, actualmente la prioridad de S-3 es...\na) construir el puerto espacial canario.\nb) adelantarse a los estadounidenses.\nc) desarrollar el sistema de lanzamiento de satélites.\nANSWER: c\nWHY: Su aspiración es poner satélites en órbita con un avión modificado; llevar pasajeros solo vendrá «si todo sale bien».\nQ: Los vuelos parabólicos en el Airbus A-300 se utilizarán para realizar...\na) viajes turísticos.\nb) pruebas de ingeniería.\nc) formación de los astronautas.\nANSWER: a\nWHY: Era una práctica de los astronautas, pero ahora «los afortunados que lo puedan costear» flotarán: es turismo.\nQ: En el texto se dice que la empresa S3 ha elegido Canarias debido a...\na) su estratégica localización.\nb) sus condiciones atmosféricas.\nc) la conjunción de rutas aéreas.\nANSWER: a\nWHY: La eligieron «por la posición geográfica»; el pasillo aéreo es despejado, no una conjunción de rutas.\nQ: Sesenta millones es la aportación al proyecto...\na) del gobierno canario.\nb) de la filial española de S3.\nc) de la Agencia Europea del Espacio.\nANSWER: b\nWHY: S-3 España, que cuenta con el apoyo de las autoridades canarias, contribuye con 60 millones.\nQ: Los viajes turísticos a la Estación Espacial Internacional se suspendieron por problemas con...\na) la distancia.\nb) el transporte.\nc) el alojamiento.\nANSWER: b\nWHY: Dejó de ofertarse porque había escasez de naves (transporte) para los astronautas profesionales.\n\n=== TAREA 2 ===\nTYPE: MATCH\nTITLE: El libro que más me influyó en la infancia\nINSTRUCTIONS: Usted va a leer cuatro textos en los que cuatro personas cuentan cuál fue el libro que más les influyó en su infancia. Relacione las preguntas con los textos (A, B, C o D).\n[TEXT A | PABLO]\nCuando les digan que lo audiovisual es enemigo de la lectura, no hagan caso. A través del oído y de las imágenes se puede llegar a descubrir la literatura. Así fue en mi caso. *La isla del tesoro*, mi relato preferido desde los siete años hasta hoy, lo escuché primero en disco antes de leerlo. Y en uno de los tebeos que devoraba semanalmente con apetito insaciable, me encontré con el cuento *El corazón delator*, que sirvió de base a mi pasión de lector. Pero no conviertan esas obras en fetiches de valor universal: si yo tuviese hoy aquella edad, seguro que me iniciaría en la literatura a través de algún juego de videoconsola. Solo una cosa es segura: los libros que nos enganchan en la infancia son los que nos gustan a nosotros, no a los educadores, porque leer es un vicio maravilloso, no una virtuosa necesidad formativa.\n[/TEXT]\n[TEXT B | ÁNGEL]\nLa serie de novelas que me enganchó a la ficción fue la de Tarzán. Debí de leerla con siete u ocho años. Cuando mi madre me apagaba la luz, yo encendía la linterna debajo de las sábanas para seguir leyendo, o bien esperaba hasta que sus pasos se alejaban y oía el televisor. Entonces salía sigilosamente al pasillo y me encerraba en el baño con mi libro. Hasta donde me alcanza la memoria, la primera imagen narrativa fuerte que guardo de la serie es cuando la mona que va a adoptar a Tarzán lo encuentra y lo coge en brazos. Si la marca del buen narrador es ser capaz de encarnar un personaje o una emoción en una acción o una actitud que se grabe para siempre en los espíritus, está claro que, conmigo, el autor lo consiguió. Desde entonces, no he dejado de leer.\n[/TEXT]\n[TEXT C | JORGE]\nHubo un libro en mi infancia que me produjo una vivísima impresión. Empecé a leerlo el día de mi primera comunión, a los siete años. Con los altibajos típicos de un acontecimiento excitante en el que puedes pasar muy fácilmente del júbilo exacerbado a la rabieta total, a media tarde escapé disgustado del bullicio del banquete familiar, me encerré en mi cuarto y me puse a leer un libro que me había traído un pariente. Se trataba de una versión extensa, en tapa dura, de *La isla misteriosa*, de Julio Verne. Seguí leyendo, sorprendido, intrigado, expectante y confuso, y cuando al cabo de un rato llamaron a la puerta del cuarto reclamando mi presencia, el disgusto se había desvanecido por completo, y solo tenía ganas de seguir con la lectura, pues la historia me había atrapado desde el principio. Ese fue mi primer y muy inesperado encuentro con la literatura.\n[/TEXT]\n[TEXT D | RAÚL]\nEl primer libro que dejó un rastro indeleble en mí fue, sin el menor asomo de duda, *El cartero del Rey*, de Tagore. Tuve una madre con la sana costumbre de leerme en voz alta cuando yo era muy chico, y ese fue el libro que, aún recuerdo, me encantaba que me leyera una y otra vez cuando yo apenas había aprendido a leer. Todavía permanece, por otro lado, vívida en mí, la impresión que me causó la lectura de *La vuelta al mundo en 80 días*. Creo que su lectura marcó mi carácter viajero. Desde entonces supe que había un universo vasto y maravilloso que me aguardaba y en el que merecía la pena inmiscuirse. La lectura supuso, para el niño solitario y cerrado que yo era antes, la vía por la que podía conectarme con el mundo.\n[/TEXT]\nQ: ¿Quién dice que su primer libro se lo regaló un familiar?\nANSWER: C\nWHY: Jorge: «un libro que me había traído un pariente».\nQ: ¿Quién dice que se inició en la literatura con una colección?\nANSWER: B\nWHY: Ángel: «la serie de novelas» de Tarzán (una colección de libros).\nQ: ¿Quién dice que de pequeño solía leer a escondidas?\nANSWER: B\nWHY: Ángel leía con la linterna bajo las sábanas o encerrado en el baño.\nQ: ¿Quién dice que el libro que más le influyó lo escuchó muchas veces?\nANSWER: D\nWHY: Raúl: su madre le leía *El cartero del Rey* «una y otra vez». Pablo escuchó su libro en disco, pero no dice que fuera muchas veces.\nQ: ¿Quién se aficionó a la literatura en medio de una celebración?\nANSWER: C\nWHY: Jorge empezó a leer el día de su primera comunión, durante el banquete.\nQ: ¿Quién dice que era un niño introvertido?\nANSWER: D\nWHY: Raúl: «el niño solitario y cerrado que yo era antes».\nQ: ¿Quién dice que el primer libro que leyó le enganchó desde las primeras páginas?\nANSWER: C\nWHY: Jorge: «la historia me había atrapado desde el principio».\nQ: ¿Quién recuerda vivamente una escena de su historia favorita?\nANSWER: B\nWHY: Ángel recuerda la imagen de la mona que encuentra a Tarzán y lo coge en brazos.\nQ: ¿Quién estaba enfadado cuando empezó a leer su primer libro?\nANSWER: C\nWHY: Jorge escapó «disgustado» del banquete y se encerró a leer.\nQ: ¿Quién se aficionó a la lectura a través de un cómic?\nANSWER: A\nWHY: Pablo: en uno de los tebeos (cómics) encontró el cuento que fue la base de su pasión de lector.\n\n=== TAREA 3 ===\nTYPE: FRAGMENTS\nTITLE: Fundéu, la «academia de los periodistas»\nINSTRUCTIONS: Lea el siguiente texto, del que se han extraído seis fragmentos. A continuación lea los ocho fragmentos propuestos (A - H) y decida en qué lugar del texto hay que colocar cada uno de ellos. Hay dos fragmentos que no tiene que elegir.\n[TEXT]\nEl lenguaje es un instrumento esencial del periodismo y el periodismo es un vehículo indispensable de la lengua. Por su difusión, más amplia e inmediata que la de la literatura, los medios de comunicación son los transmisores más eficaces de los usos lingüísticos y uno de los elementos que más influye en la constante formación del idioma. Una responsabilidad compartida ahora por miles de personas, cuyo mensaje tiene gran eco en las redes sociales. [[17]].\n\nLa Fundación del Español Urgente (Fundéu) es una organización que inició su actividad en 2005. [[18]]. La fundación cuenta con la ayuda de la Real Academia Española (RAE) cuyo director es, a su vez, el presidente de la Fundéu.\n\nUn equipo de filólogos y periodistas revisa los medios de comunicación y resuelve las dudas que surgen sobre el uso diario de la lengua. [[19]]. Sin embargo, su método de trabajo le da autoridad para recomendar el buen uso con una mayor agilidad que la RAE.\n\nEl equipo de Fundéu resuelve todos los días consultas a través de diversos canales: desde el correo hasta el teléfono, pasando, cómo no, por las redes sociales. [[20]]. También se examina la prensa en busca de las palabras y expresiones que la actualidad pone de moda, porque las palabras tienen sus momentos de «fama» en función de las necesidades informativas. [[21]]. En ella, se debaten los temas más complejos para determinar una resolución acordada entre todos, que después se publica en su página web.\n\n[[22]]. Es, precisamente, ahí donde Fundéu sirve de enlace con la Real Academia Española, como fuente de información sobre nuevos términos o usos lingüísticos y como campo de pruebas para valorar la conveniencia de hacer correcciones o incorporaciones en las obras académicas.\n[/TEXT]\nFRAGMENT A: Conscientes de que el mal uso del lenguaje desautoriza el contenido, solicitan ayuda sobre temas lingüísticos.\nFRAGMENT B: Las dudas no solo provienen de profesionales cuya herramienta de trabajo es la lengua, sino también de particulares que tienen interés por su uso.\nFRAGMENT C: En los años setenta, el objetivo fue la redacción de un manual de estilo para periodistas que dio origen al Departamento de Español Urgente.\nFRAGMENT D: A diferencia de la RAE, la Fundéu no ofrece normas definitivas sobre lo que es correcto y lo que no.\nFRAGMENT E: Su objetivo es desarrollar el buen uso del español en los medios y sirve de guía lingüística a todos los hablantes, tanto en España como en Hispanoamérica.\nFRAGMENT F: Las cuentas de RAE y Fundéu en las redes sociales tienen gran seguimiento, provocan intensos debates e incluso tienen imitadores.\nFRAGMENT G: Algunas cuestiones no quedan resueltas en la redacción y son analizadas por el Consejo Asesor, que se reúne semanalmente.\nFRAGMENT H: Los términos que provocan más dudas son estudiados en la reunión matinal de la redacción.\nGAP 17: A\nWHY: Sigue a «responsabilidad compartida por miles de personas»: esas personas, conscientes de que el mal uso desautoriza el contenido, piden ayuda.\nGAP 18: E\nWHY: Habla de la organización que inició su actividad en 2005 y su objetivo. El fragmento C (años setenta) contradice la fecha.\nGAP 19: D\nWHY: Lo contrasta con «Sin embargo, su método de trabajo le da autoridad…»: no da normas definitivas como la RAE.\nGAP 20: B\nWHY: Tras los canales de consulta (correo, teléfono, redes), explica quién hace las consultas: profesionales y particulares.\nGAP 21: H\nWHY: «En ella» se refiere a la reunión (femenino): la reunión matinal de la redacción, donde se debaten los temas complejos.\nGAP 22: G\nWHY: «Ahí» remite al Consejo Asesor, que analiza lo no resuelto en la redacción y sirve de enlace con la RAE.\n\n=== TAREA 4 ===\nTYPE: CLOZE\nTITLE: Mis cartas\nINSTRUCTIONS: Lea el texto y rellene los huecos con la opción correcta (a / b / c).\n[TEXT]\nCualquiera podría pensar que hay métodos más rápidos y sencillos para emitir las quejas a la administración, pero yo estoy convencido [[23]] que las cartas son el más adecuado. Al recibir una carta, el conserje se siente justificado y, cuando [[24]] la carta sobre la mesa del despacho del director, es un hombre que participa en una cadena aparentemente útil. Trasladar la carta desde la conserjería al despacho del director le [[25]] ponerse de pie, caminar unos metros, golpear la puerta del despacho, decir «Con permiso» y depositar la carta entre el calendario y el pisapapeles. Por lo demás, el director del servicio, al leer una carta, [[26]] sea una carta de protesta, siente alguna clase de satisfacción: el servicio deja de ser abstracto, de pronto [[27]] en algo material y tangible.\n\nPor ejemplo, el director de la compañía eléctrica. Como la electricidad es algo inmaterial y, en cierto modo, abstracto, sobre [[28]] generalmente no nos acordamos [[29]] que un corte de luz provoca que volvamos al viejo sistema de las velas, es comprensible que el director general de la compañía [[30]] como el distribuidor de alguna clase de bien espiritual.\n\nEscribí al director general de la compañía de la luz a causa del contador. El contador que contaba los pasos imaginarios de la electricidad giraba como una peonza y los números rojos y blancos saltaban como conejos. No usé estas expresiones en mi carta, porque [[31]] habrían sido consideradas excesivamente literarias. El director general fue muy gentil: me envió a un inspector. Era un hombrecito de aspecto asombrado e inquieto. Traía una maletita negra bajo el brazo, [[32]] sacó una linterna de metal y una pinza que me parecieron extraordinariamente grandes [[33]] un hombre tan pequeño. Con seguridad, él sentía lo mismo, porque su manejo [[34]] resultaba bastante complicado. Cortamos la luz y nos dirigimos hacia la caja de contadores, que está en el oscuro recibidor de mi apartamento, adosada a la pared, a una considerable altura. [[35]] un paisaje de los Alpes suizos sobre la tapa, para que le [[36]] un toque de exotismo al recibidor. De modo que cuando alguien entra en mi casa, divisa solo las colinas nevadas sobre un fondo azul y no tiene por qué pensar en electricidad y botones.\n[/TEXT]\nGAP 23: en | de | a => b\nWHY: Estar convencido DE algo.\nGAP 24: haya puesto | pone | ponga => c\nWHY: «Cuando» + acción futura/hipotética → subjuntivo: cuando ponga la carta.\nGAP 25: exige | obliga | impulsa => a\nWHY: «Exigir» va directamente con infinitivo (le exige ponerse); «obligar» e «impulsar» necesitarían «a».\nGAP 26: como si | puesto que | aunque => c\nWHY: «Aunque sea una carta de protesta»: valor concesivo con subjuntivo.\nGAP 27: se vuelve | se convierte | se pone => b\nWHY: Convertirse EN algo material y tangible.\nGAP 28: el que | la que | lo que => b\nWHY: Antecedente «la electricidad»: sobre la que no nos acordamos.\nGAP 29: antes de | tan pronto | hasta => c\nWHY: «No nos acordamos hasta que…»: límite temporal con «que».\nGAP 30: se siente | se sienta | se sentirá => b\nWHY: «Es comprensible que» exige subjuntivo.\nGAP 31: a lo mejor | puede que | es normal que => a\nWHY: «A lo mejor» + indicativo/condicional (habrían sido); las otras exigen subjuntivo.\nGAP 32: de que | de cuya | de la que => c\nWHY: De la maletita sacó… → «de la que sacó».\nGAP 33: a | para | por => b\nWHY: «Grandes para un hombre tan pequeño»: comparación de adecuación.\nGAP 34: lo | se | le => c\nWHY: «Su manejo le resultaba complicado» (a él): complemento indirecto.\nGAP 35: Cubrí | Coloqué | Oculté => b\nWHY: «Coloqué un paisaje sobre la tapa»; cubrir/ocultar exigirían la tapa como complemento directo.\nGAP 36: diera | daría | dé => a\nWHY: «Para que» + subjuntivo imperfecto por la secuencia con «coloqué».\n";
+const RL_SEED2_TEXT = "EXAM_TITLE: DELE B2 · Modelo 0 oficial (2012) · Prueba 1 (Comprensión de lectura)\nLEVEL: B2\nTIME_MINUTES: 70\nSHUFFLE: off\nNOTE: Modelo de examen oficial del Instituto Cervantes (Examen 00, versión 1) con sus claves oficiales.\n\n=== TAREA 1 ===\nTYPE: MC\nTITLE: Basura electrónica\nSOURCE: Adaptado de www.lanacion.com.ar. Argentina\nINSTRUCTIONS: Usted va a leer un texto sobre la basura electrónica. Después, debe contestar a las preguntas. Seleccione la respuesta correcta (a / b / c).\n[TEXT]\n*Débora Slotnisky*\n\nEn su informe, de marzo de este año, *Minería y basura electrónica*, Greenpeace Argentina calcula que el 50% de los residuos de aparatos eléctricos y electrónicos se abandonan en hogares y oficinas, que el 40% se entierra o se amontona en basurales y que solo un 10% se procesa como residuos. Si se suman heladeras, microondas, televisores y videos, se estima que los argentinos desechan unos 6 kg de este tipo de aparatos por habitante cada año. «Esto representa un derroche de recursos que podrían recuperarse, además de una alta fuente de contaminación», destaca el documento.\n\nDada la magnitud del problema, Greenpeace está impulsando una ley nacional de gestión de residuos de aparatos eléctricos y electrónicos que, según Consuelo Bilbao, coordinadora de Greenpeace Argentina, «obligaría a los fabricantes a hacerse cargo de los residuos de sus propios productos. Además, estipularía la creación de un sistema de gestión de la basura electrónica que permitiría a los consumidores deshacerse de sus aparatos, de manera segura, una vez finalizada su vida útil».\n\nMientras se resuelve el futuro de la ley impulsada por Greenpeace, es importante saber que muchos de los aparatos desechados se pueden reutilizar, restaurar o reciclar. Por ejemplo, Te Reciclo es una organización que recolecta productos electrónicos a domicilio y retira aquellos que encuentra tirados en la calle con la intención de repararlos y venderlos después a muy bajo costo. «Especialmente insistimos en que trabajamos puerta a puerta, sin cargo alguno, porque ni las empresas ni los particulares quieren trasladar estos equipos de un lugar a otro», explica Ravettini, miembro del proyecto.\n\nLa Fundación Equidad es otra ONG que acepta donaciones de todo tipo de equipos sin importar el modelo o su estado. En su taller de reciclaje estos residuos se transforman en computadoras listas para ser donadas a escuelas públicas de todo el país. En este taller también se forma, en el área del tratamiento de la basura tecnológica, a personas excluidas del mercado laboral.\n\nEntre los aparatos electrónicos más utilizados, los teléfonos celulares son los que poseen la tasa más alta de recuperación: más del 90% de un celular puede ser reciclado. Ya hay operadoras que recolectan las baterías, uno de los componentes más contaminantes. Por ejemplo, Personal recibe baterías usadas en sus agencias y las clasifica en reutilizables y no reutilizables. Además, esta empresa organiza eventos en los que entrega un regalo sorpresa por cada batería que recibe.\n\nSe estima que los aparatos tecnológicos están formados por un 25% de componentes reutilizables, un 72% de reciclables y un 3% de elementos tóxicos. Computadoras, celulares, televisores, entre otros muchos objetos cotidianos abandonados en cualquier rincón, pueden tener un mejor destino. Solo considerando los tres metales más valiosos presentes en un celular (oro, plata y cobre), si tenemos en cuenta que este año han sido descartados 10 millones de aparatos en la Argentina, se calcula que se han perdido, este año, 15 millones de dólares.\n[/TEXT]\nQ: Según el informe publicado por la organización Greenpeace, en Argentina…\na) el 50% de la población guarda aparatos eléctricos viejos.\nb) un 40% de los desechos tecnológicos recibe tratamiento.\nc) cada persona genera 6 kg de residuos electrónicos al año.\nANSWER: c\nWHY: Los argentinos desechan unos 6 kg de aparatos por habitante cada año. El 50% es de residuos abandonados, no de personas, y el 40% se entierra o se amontona.\nQ: Según el texto, la ley impulsada por Greenpeace Argentina…\na) impone sanciones a los fabricantes de tecnología.\nb) implica la creación de empresas de reciclaje.\nc) aún no ha sido aprobada.\nANSWER: c\nWHY: «Mientras se resuelve el futuro de la ley…»: todavía no se ha aprobado. Obligaría a los fabricantes a gestionar sus residuos, pero no habla de sanciones.\nQ: En el texto se dice que la organización Te Reciclo…\na) arregla aparatos electrónicos en desuso.\nb) cobra por retirar los aparatos tecnológicos.\nc) estudia el tratamiento de la basura tecnológica.\nANSWER: a\nWHY: Recolecta aparatos con la intención de repararlos y venderlos. El servicio puerta a puerta es sin cargo.\nQ: El texto nos informa de que en el taller de reciclaje de la Fundación Equidad…\na) se recolectan computadoras viejas de centros educativos.\nb) se reparan sin coste alguno equipos averiados.\nc) se ofrece formación a desempleados.\nANSWER: c\nWHY: Se forma a «personas excluidas del mercado laboral». Las computadoras se donan a escuelas, no se recogen de ellas.\nQ: Según el texto, existen algunas compañías de telefonía celular que…\na) se encargan del 90% del reciclaje del celular.\nb) recogen baterías desechadas.\nc) compran baterías en desuso.\nANSWER: b\nWHY: Hay operadoras que recolectan las baterías (por ejemplo, Personal las recibe en sus agencias). El 90% es lo que se puede reciclar de un celular.\nQ: La autora del texto dice que en Argentina la basura electrónica…\na) es cada vez más abundante.\nb) se amontona en cualquier lugar.\nc) supone pérdidas económicas.\nANSWER: c\nWHY: Calcula que este año se han perdido 15 millones de dólares en metales valiosos de los celulares descartados.\n\n=== TAREA 2 ===\nTYPE: MATCH\nTITLE: Cómo publiqué mi primer libro\nSOURCE: Adaptado de http://cultura.elpais.com. España\nINSTRUCTIONS: Usted va a leer cuatro textos en los que cuatro escritores recuerdan cómo publicaron su primer libro. Relacione las preguntas con los textos (A, B, C o D).\n[TEXT A | RAFAEL]\nEra un periodista joven e inexperto cuando, en 1995, entregué mi primera novela a la editorial Planeta. Se llamaba *Invierno en la torre*, y el diario *El Mercurio* publicó una reseña que se llamaba «A patadas con las palabras» y decía que la condena para el autor era pasar cinco años y un día sin escribir.\n\nEn un programa de televisión donde había críticos y escritores preguntaron: «¿Cuál es el peor escritor de Chile?», y una señorita dijo: «Rafael Gumucio». Me quedé bloqueado, pero decidí no tirar la toalla y al año siguiente escribí *Memorias prematuras*, y dije: «Bueno, si está mal, es el final de todo».\n\nPero hubo críticas halagüeñas y ahí empezó mi carrera real. Pensar que publicar un libro te transforma en escritor es lo mismo que pensar que cuando eres padre por primera vez te transformas en padre. Es algo que vas a tener que demostrarte a ti mismo todos los días.\n[/TEXT]\n[TEXT B | ALBERTO]\nConseguí mi primer contrato porque el escritor Antonio Skármeta, a cuyo taller asistía, le habló con admiración de un texto mío a un editor de Planeta. El editor me citó en un café y me hizo firmar un contrato en una servilleta. Fue como existir antes de existir. Tardé tanto en escribir esa novela que antes escribí un cuento, *Sobredosis*, con el que me presenté a un premio. Es muy importante cómo se lanza un escritor y en ese sentido yo siento que sobreviví a pesar de todo. La fiesta de lanzamiento se hizo en una discoteca, con actrices y gente famosa. Aunque en un programa de televisión la crítica fue atroz, el libro se agotó en cuatro días. Si bien me importaba no ser aceptado, tampoco me destrozó porque yo quería ser director de cine. Y entonces me envalentonaba, y pensaba: «¿Quieren pelear? Vamos a pelear».\n[/TEXT]\n[TEXT C | MARIANA]\nMi familia creía que yo merecía el Nobel, y para demostrarles que estaban equivocados junté diez cuentos, los presenté a un certamen y resulta que gané. Después le dejé el manuscrito de mi primera novela a un colega de trabajo que conocía al editor de Planeta. Al tiempo, recibí un correo electrónico diciendo que me iban a publicar. Se llamó *El núcleo del disturbio*, se publicó en 2002, y salieron algunas reseñas buenas. Pero fue devastador. Para el lanzamiento del libro me llevaron a un programa de televisión y un periodista me preguntó si yo estaba con la línea de los escritores autorreferenciales o narrativistas, y yo no tenía idea de qué era eso, entonces di una respuesta muy ignorante: «Bueno, me gustan las dos». Durante mucho tiempo ese libro me dio vergüenza. El segundo es de 2009, para que veas el tamaño del trauma.\n[/TEXT]\n[TEXT D | RICARDO]\nEn 1998 trabajaba como profesor de filosofía y me habían destinado a un instituto de Oviedo. Una noche en que tenía una hora libre, subí a mi departamento y me encontré a Benito García Noriega ojeando unos papeles. Eran unas galeradas del *Viaje sentimental* de Laurence Sterne. Descubrimos dos cosas: que él, aparte de catedrático de Filosofía, era el dueño y editor de KRK, y que yo, aparte de un profesor interino del sistema público, había escrito una novela que había presentado a un premio. Benito me pidió que le mandara el manuscrito. Se lo dejé un viernes por la tarde y el sábado por la mañana me llamó entusiasmado. En febrero de 1999, KRK publicó *La filosofía en invierno*. El libro pasó desapercibido. Hoy no solo ha conocido una segunda edición en KRK, sino que ha sido traducido al francés, lo cual no deja de causarme asombro.\n[/TEXT]\nQ: ¿Quién dice que antes de que escribiera su primera novela ya sabía que se la iban a publicar?\nANSWER: B\nWHY: Alberto firmó el contrato antes de escribir la novela («existir antes de existir»).\nQ: ¿Quién dice que su primera novela la editó un compañero de trabajo?\nANSWER: D\nWHY: Ricardo se encontró con Benito, colega y catedrático de su instituto, que resultó ser el editor de KRK y publicó su novela.\nQ: ¿Quién dice que un periódico publicó una mala crítica de su primer libro?\nANSWER: A\nWHY: Rafael: el diario El Mercurio publicó una reseña negativa.\nQ: ¿Quién dice que para promocionar su novela se organizó un evento?\nANSWER: B\nWHY: Alberto: la fiesta de lanzamiento en una discoteca.\nQ: ¿Quién dice que tardó mucho en escribir su segunda novela?\nANSWER: C\nWHY: Mariana: la primera es de 2002 y la segunda de 2009.\nQ: ¿Quién dice que antes de publicar su primera novela ya había recibido un premio?\nANSWER: C\nWHY: Mariana presentó diez cuentos a un certamen y ganó. Alberto solo se presentó a un premio, sin decir que lo ganara.\nQ: ¿Quién dice que su segunda novela tuvo mejores críticas que la primera?\nANSWER: A\nWHY: Rafael: con su segundo libro «hubo críticas halagüeñas».\nQ: ¿Quién dice que su primera novela tuvo escasa repercusión?\nANSWER: D\nWHY: Ricardo: «El libro pasó desapercibido».\nQ: ¿Quién dice que para promocionar su primer libro fue a un programa de televisión?\nANSWER: C\nWHY: Mariana: para el lanzamiento la llevaron a un programa de televisión.\nQ: ¿Quién dice que su primer libro se vendió muy bien?\nANSWER: B\nWHY: Alberto: «el libro se agotó en cuatro días».\n\n=== TAREA 3 ===\nTYPE: FRAGMENTS\nTITLE: Los videojuegos como arte (David Cuen)\nSOURCE: Adaptado de www.bbc.co.uk\nINSTRUCTIONS: Lea el siguiente texto, del que se han extraído seis fragmentos. A continuación lea los ocho fragmentos propuestos (A-H) y decida en qué lugar del texto hay que colocar cada uno de ellos. Hay dos fragmentos que no tiene que elegir.\n[TEXT]\nDe cada diez veces que aparece una noticia relacionada con un videojuego en un medio de comunicación, nueve son para decir algo malo. Casi con toda seguridad hablarán de su violencia, discutirán su papel educativo o destacarán las ganancias millonarias que genera esta maléfica industria. [[17]]\n\nPero a pesar de que todavía somos muy pocos los que consideramos que los videojuegos son una forma de arte, al menos nuestra opinión ya empieza a ser conocida en distintos ambientes.\n\n[[18]] En primer lugar, tienen mucho que ver con el arte narrativo; muchos videojuegos cuentan una historia de principio a fin utilizando una gran variedad de técnicas y procedimientos narrativos. En segundo lugar, también tienen relación con las artes visuales. [[19]] Y, por último, también parece evidente su relación con la música: la música que aparece en algunos videojuegos y la calidad de la edición de sonido no tienen nada que envidiar a lo que solemos encontrar en el cine.\n\n[[20]] Por ejemplo, la Academia Británica de las Artes Cinematográficas y de la Televisión (BAFTA, por sus siglas en inglés) premia cada año a los mejores videojuegos y otorga premios, entre otros, a la mejor música original, al uso de audio de mayor calidad o a las mayores innovaciones tecnológicas. A pesar de estos datos, quienes consideran que los videojuegos nunca serán un arte argumentan que la experiencia del entretenimiento digital jamás podrá compararse con la del cine. [[21]]\n\nEs evidente que no todos los videojuegos pueden ser considerados obras de arte, pero me parece que los últimos avances en este medio son tan espectaculares que algunos deberían ser reconocidos unánimemente como arte. Al igual que un libro lleva al lector a un mundo solo alcanzable por el poder de su imaginación o que una película entretiene y a la vez origina una reflexión, un videojuego abre la puerta a un mundo virtual en el que se produce una interacción casi mágica entre la historia y el jugador.\n\n[[22]] Para un jugador como yo los videojuegos son un arte, aunque la mayoría siga considerándolos una pérdida de tiempo.\n[/TEXT]\nFRAGMENT A: Los diseñadores de juegos recrean, a veces con mucho «arte», épocas, costumbres y elementos de la vida real o de la ficción.\nFRAGMENT B: Esta posibilidad de interactuar es lo que diferencia a los videojuegos de otras artes.\nFRAGMENT C: Y es que en escasísimas ocasiones el entretenimiento digital es tratado como un arte, como una expresión cultural propia de nuestro tiempo.\nFRAGMENT D: Sin embargo, su teoría es que los videojuegos son una forma de arte que debe ser valorada como tal.\nFRAGMENT E: Por fortuna es en el mundo del cine donde ya se empieza a reconocer la dimensión artística de los videojuegos.\nFRAGMENT F: En cambio, algunos de ellos cuentan una historia de principio a fin, con un hilo narrativo muy definido.\nFRAGMENT G: Para ellos, la mayoría de los jugadores de videojuegos lo único que hace es jugar, perder el tiempo jugando.\nFRAGMENT H: Sin entrar a discutir si son arte o no, lo que nadie puede negar es que los videojuegos contienen elementos de otras artes.\nGAP 17: C\nWHY: Retoma «nueve [noticias] son para decir algo malo»: «Y es que» explica que casi nunca se trata el videojuego como arte.\nGAP 18: H\nWHY: Introduce la enumeración «En primer lugar… En segundo lugar… Por último…» de los elementos de otras artes.\nGAP 19: A\nWHY: Sigue a «artes visuales»: los diseñadores recrean épocas y elementos con «arte».\nGAP 20: E\nWHY: Abre el párrafo del cine y el «Por ejemplo» del premio BAFTA, que reconoce la dimensión artística.\nGAP 21: G\nWHY: «Para ellos» remite a quienes dicen que nunca serán arte; cierra su argumento.\nGAP 22: B\nWHY: «Esta posibilidad de interactuar» recoge la «interacción casi mágica» del párrafo anterior.\n\n=== TAREA 4 ===\nTYPE: CLOZE\nTITLE: Cómo me deshice de quinientos libros (Augusto Monterroso)\nSOURCE: Adaptado de Cuentos. Augusto Monterroso. Guatemala\nINSTRUCTIONS: Lea el texto y rellene los huecos con la opción correcta (a / b / c).\n[TEXT]\nHace varios años leí un ensayo de no recuerdo qué autor inglés en el que este contaba las dificultades que se le presentaron para deshacerse de un paquete de libros que por [[23]] motivo quería conservar en su biblioteca. Ahora bien, en el curso de mi existencia he podido observar que entre los intelectuales es corriente oír la queja de que los libros terminan [[24]] sacarlos de sus casas. Yo no he estado, y probablemente no lo estaré jamás, en este último extremo; pero nunca [[25]] imaginar que algún día me encontraría en el del ensayista inglés y que tendría que luchar por desprenderme de quinientos volúmenes.\n\nTrataré [[26]] contar mi experiencia. De pasada diré que es probable que esta historia [[27]] a muchos. No importa. La verdad es que en determinado momento de su vida, o uno conoce demasiada gente (escritores), o a uno lo conoce demasiada gente (escritores), o uno se da cuenta de que [[28]] ha tocado vivir en una época en que se editan demasiados libros. Llega el momento en que tus amigos escritores te regalan tantos libros (aparte de los que generosamente te pasan para leer [[29]] inéditos) que necesitarías dedicar todos los días del año para enterarte de sus interpretaciones del mundo y de la vida. El hecho es que desde hace veinte años mi afición por la lectura se vino [[30]] con el hábito de comprar libros.\n\nPor ese tiempo, di en la torpeza de visitar las librerías de viejo. Cuando uno empieza a sentir la atracción [[31]] esos establecimientos llenos de polvo, el placer que proporcionan los libros ha empezado a degenerar en la manía de comprarlos, y esta a su vez en la vanidad de adquirir algunos raros para asombrar a los amigos o a los simples conocidos.\n\n¿Cómo tiene lugar este proceso? Un día uno [[32]] tranquilo leyendo en su casa cuando llega un amigo y le dice: «¡Cuántos libros tienes!». Eso le suena a uno como si el amigo le [[33]]: «¡Qué inteligente eres!», y el mal está hecho. Lo demás, ya se sabe. [[34]] pone uno a contar los libros por cientos, luego por miles, y a sentirse cada vez más inteligente. Como a medida que pasan los años ([[35]] se sea un verdadero infeliz idealista) uno cuenta con más posibilidades económicas, uno ha recorrido más librerías y, naturalmente, uno se [[36]] en escritor, uno posee tal cantidad de libros que ya no sólo eres inteligente: en el fondo eres un genio.\n\nAsí es la vanidad esta de poseer muchos libros.\n[/TEXT]\nGAP 23: cualquier | ningún | ninguno => b\nWHY: «Por ningún motivo»: ninguno se apocopa a «ningún» ante sustantivo masculino.\nGAP 24: por | para | en => a\nWHY: «Terminar por + infinitivo»: acabar haciendo algo.\nGAP 25: hubiera podido | habré podido | pudiera => a\nWHY: «Nunca hubiera podido imaginar que algún día me encontraría…»: hipótesis irreal del pasado.\nGAP 26: a | en | de => c\nWHY: «Tratar de + infinitivo»: intentar hacer algo.\nGAP 27: irritaría | irrita | irrite => c\nWHY: «Es probable que» exige subjuntivo.\nGAP 28: le | se | lo => a\nWHY: «Le ha tocado vivir»: complemento indirecto del verbo tocar.\nGAP 29: pero | aún | ya => b\nWHY: «Aún inéditos»: todavía no publicados.\nGAP 30: contaminar | contaminando | contaminado => b\nWHY: «Se vino contaminando»: venir + gerundio expresa un proceso gradual.\nGAP 31: para | con | por => c\nWHY: «La atracción por algo».\nGAP 32: es | se pone | está => c\nWHY: «Está tranquilo leyendo»: estado temporal con gerundio.\nGAP 33: diría | dijera | decía => b\nWHY: «Como si» exige imperfecto de subjuntivo: como si el amigo le dijera.\nGAP 34: Se | Le | Lo => a\nWHY: «Se pone uno a contar»: ponerse a + infinitivo, con «se» reflexivo.\nGAP 35: de ahí que | salvo si | a menos que => c\nWHY: «A menos que se sea»: condición negativa con subjuntivo.\nGAP 36: ha vuelto | ha convertido | ha hecho => b\nWHY: «Uno se ha convertido en escritor»: convertirse en + sustantivo.\n";
+const RL_SEED_MAP = {[RL_SEED_ID]: RL_SEED_TEXT, [RL_SEED2_ID]: RL_SEED2_TEXT};   // bundled exams are synced as tiny stubs, not as 20 KB copies
 
 const RL_FORMAT_SPEC = `FORMATO DE SALIDA (READING_FORMAT v1). Una aplicación lo leerá automáticamente, así que síguelo al pie de la letra.
 - Entrega el resultado dentro de UN solo bloque de código (entre tres acentos graves, como un bloque de código), sin texto antes, entre exámenes ni después.
@@ -11011,16 +11112,26 @@ Te adjunto material oficial del Instituto Cervantes. Estúdialo a fondo y despu�
 __SOURCES__
 
 3) CÓMO CONSTRUIR CADA TAREA
-- Tarea 1: las preguntas siguen el orden del texto; las opciones tienen longitud parecida; la respuesta correcta es una paráfrasis del texto y toda la opción debe ser correcta. Reparte a/b/c (no más de dos respuestas iguales seguidas). Texto de 450-600 palabras.
-- Tarea 2: cuatro textos de 110-170 palabras. Cada pregunta se resuelve con un único texto, pero con paráfrasis, nunca con las mismas palabras. Cada texto contesta a 2-3 preguntas. Las preguntas no siguen el orden de los textos.
-- Tarea 3: texto de 350-450 palabras con 6 huecos [[17]]…[[22]]. Cada fragmento solo encaja en un hueco gracias a pronombres, conectores, referentes («ahí», «en ella», «sin embargo») o a la coherencia temática. Los dos distractores deben tentar pero contradecir algo del texto. Los huecos van al final de una frase o al inicio de un párrafo.
-- Tarea 4: texto de 300-380 palabras con 14 huecos [[23]]…[[36]]. Gramática y léxico B2: preposiciones y régimen verbal, indicativo/subjuntivo, relativos, pronombres (le/lo/se), conectores, tiempos verbales, colocaciones. Las tres opciones deben ser plausibles; solo una correcta.
+- Tarea 1: texto de 450-600 palabras. Las preguntas siguen el orden del texto. La respuesta correcta es una paráfrasis del texto, nunca una cita.
+- Tarea 2: cuatro textos de 110-170 palabras. Cada pregunta se resuelve con un único texto, pero con paráfrasis y generalizaciones («un familiar» en vez de «un tío»), nunca con las mismas palabras. Las preguntas NO siguen el orden de los textos.
+- Tarea 3: texto de 350-450 palabras con 6 huecos [[17]]…[[22]]. Los huecos van al final de una frase o al inicio de un párrafo.
+- Tarea 4: texto de 300-380 palabras con 14 huecos [[23]]…[[36]]. Cada hueco evalúa un punto distinto: preposiciones y régimen verbal, indicativo/subjuntivo, relativos, pronombres (le/lo/se), conectores, tiempos verbales, colocaciones. No repitas la misma regla más de dos veces. Las tres opciones son formas reales del español y las tres parecen plausibles.
 - WHY: una explicación breve y exacta de cada respuesta (en T4 nombra la regla gramatical).
-- Antes de entregar, revisa uno por uno cada ANSWER: debe ser inequívoca y verificable en el texto.
+
+REGLAS ANTI-SESGO (son los errores más típicos de las IA; el simulacro se vuelve inútil si los cometes)
+- Sigue el PLAN DE RESPUESTAS de la sección 5. Jamás pongas las respuestas en orden a-b-c-a-b-c ni los fragmentos correctos en orden alfabético A-B-C-D-E-F.
+- La opción correcta NO puede ser la más larga, ni la más detallada, ni la única que copia palabras del texto. Las tres opciones tienen longitud y estructura parecidas. Construye los distractores así: uno usa datos del texto pero los altera o los atribuye mal; otro generaliza o exagera (siempre, nunca, todos); el tercero es cierto en el texto pero no responde a la pregunta.
+- Tarea 3: no te limites a ordenar frases lógicas. Cada fragmento debe tener un ancla verificable (conector, pronombre, referente, tiempo verbal, dato concreto) y debes comprobar que NO encaja en ningún otro hueco. Los dos distractores encajan a primera vista pero fallan por un detalle (fecha, sujeto, conector contradictorio).
+- Estilo: periodístico natural y concreto (nombres, lugares, cifras). Evita los clichés de IA («en un mundo cada vez más…», «sin lugar a dudas», listas de tres adjetivos). Alterna frases largas y cortas.
+- Antes de entregar, resuelve tú mismo cada tarea a ciegas, sin mirar el plan, y comprueba que obtienes las mismas respuestas. Corrige lo que falle.
 
 4) CANTIDAD Y TÍTULOS
-Crea __COUNT__ exámenes completos (4 tareas, 36 ítems, TIME_MINUTES: 70), con temas distintos entre sí. Títulos: «DELE B2 · Simulacro n · tema».
+__SCOPE__
 __FOCUS__
+
+5) PLAN DE RESPUESTAS (obligatorio; generado al azar para evitar patrones)
+Construye cada examen para que sus respuestas correctas sean EXACTAMENTE estas:
+__PLAN__
 
 ${RL_FORMAT_SPEC}`;
 
@@ -11071,10 +11182,30 @@ GAP 2: llega | llegue | llegará => b
 WHY: Aunque + subjuntivo (concesiva hipotética).`;
 
 /* ---------- storage ---------- */
-function rlLoadLibrary(){ try{ return JSON.parse(appDataCache[RL_EXAMS_KEY]||'null')||{}; }catch(e){ return {}; } }
-function rlLoadAttempts(){ try{ const a = JSON.parse(appDataCache[RL_ATTEMPTS_KEY]||'null'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
-function rlSaveLibrary(){ appDataSet(RL_EXAMS_KEY, JSON.stringify(rlLibrary)); }
-function rlSaveAttempts(){ if(rlAttempts.length>400) rlAttempts = rlAttempts.slice(-400); appDataSet(RL_ATTEMPTS_KEY, JSON.stringify(rlAttempts)); }
+function rlLoadLibrary(){
+  let lib = {}; try{ lib = JSON.parse(appDataCache[RL_EXAMS_KEY] || 'null') || {}; }catch(e){}
+  Object.keys(lib).forEach(k => { const e = lib[k]; if(e && e.seed && !e.source && RL_SEED_MAP[k]) e.source = RL_SEED_MAP[k]; });
+  return lib;
+}
+function rlLoadAttempts(){ try{ const a = JSON.parse(appDataCache[RL_ATTEMPTS_KEY] || 'null'); return Array.isArray(a) ? a : []; }catch(e){ return []; } }
+// Cloud sync merges "keep both sides" (union), so a plain delete would be undone by the next sync.
+// Deletions are therefore tombstones ({deleted:true, updatedAt}) that win the newer-wins merge.
+function rlMergeAttempts(a, b){
+  const m = new Map();
+  (b || []).concat(a || []).forEach(x => { if(!x || x.id == null) return; const o = m.get(x.id); if(!o) m.set(x.id, x); else if(x.deleted && !o.deleted) m.set(x.id, x); });
+  return Array.from(m.values()).sort((p, q) => (p.at || 0) - (q.at || 0)).slice(-400);
+}
+function rlSaveLibrary(){
+  // Re-read first: a cloud merge may have landed since this screen loaded; never clobber it with a stale copy.
+  rlLibrary = mergeKeyedById(rlLibrary, rlLoadLibrary(), 'id');
+  const out = {};
+  Object.keys(rlLibrary).forEach(k => { const e = rlLibrary[k]; out[k] = (RL_SEED_MAP[k] && e && e.source === RL_SEED_MAP[k]) ? Object.assign({}, e, {source:undefined, seed:true}) : e; });
+  appDataSet(RL_EXAMS_KEY, JSON.stringify(out));
+}
+function rlSaveAttempts(){ rlAttempts = rlMergeAttempts(rlAttempts, rlLoadAttempts()); appDataSet(RL_ATTEMPTS_KEY, JSON.stringify(rlAttempts)); }
+const rlEntry = id => { const e = rlLibrary[id]; return e && !e.deleted ? e : null; };
+const rlLive = () => Object.values(rlLibrary).filter(e => e && !e.deleted);
+const rlLiveAttempts = () => rlAttempts.filter(a => a && !a.deleted);
 function rlLsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
 function rlLsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
 function rlLoadSess(){ try{ const s = JSON.parse(rlLsGet(RL_SESSION_KEY)||'null'); return (s && s.examId) ? s : null; }catch(e){ return null; } }
@@ -11086,7 +11217,7 @@ function rlSetPref(k,v){ const p = rlPrefs(); p[k]=v; rlLsSet(RL_PREFS_KEY, JSON
 
 let rlLibrary = rlLoadLibrary();
 let rlAttempts = rlLoadAttempts();
-let rlSubmitting = false;
+let rlSubmitting = false, rlLastFailed = [], rlVerifyId = null, rlShufCache = {k:'', v:null};
 let rlSess = null, rlTimer = null, rlScreen = 'library', rlReview = null, rlResultAttempt = null, rlEditingId = null, rlLastPersist = 0;
 const rlParsedCache = {};
 
@@ -11121,7 +11252,7 @@ function rlSplitExams(src){
 function rlParseOne(src){
   const errors = [], warnings = [];
   const raw = String(src||'').replace(/\r\n?/g,'\n').replace(/^\uFEFF/,'').split('\n').filter(l => !/^\s*```/.test(l));
-  const exam = {title:'', level:'B2', timeMinutes:0, note:'', tareas:[]};
+  const exam = {title:'', level:'B2', timeMinutes:0, note:'', shuffle:true, tareas:[]};
   let cur = null, last = null, txt = null, m;
   const norm = s => s.trim().replace(/\*\*/g,'').replace(/^#+\s*/,'').trim();
   const finishText = () => { if(txt){ txt.body = txt.lines.join('\n').replace(/^\n+|\n+$/g,''); delete txt.lines; if(cur) cur.texts.push(txt); txt = null; } };
@@ -11135,6 +11266,7 @@ function rlParseOne(src){
       else if((m = t.match(/^LEVEL\s*:\s*(.*)$/i))) exam.level = m[1].trim() || 'B2';
       else if((m = t.match(/^TIME_MINUTES\s*:\s*(\d+)/i))) exam.timeMinutes = +m[1];
       else if((m = t.match(/^NOTE\s*:\s*(.*)$/i))) exam.note = m[1].trim();
+      else if((m = t.match(/^SHUFFLE\s*:\s*(\w+)/i))) exam.shuffle = !/^(off|no|false|0)$/i.test(m[1]);
       continue;
     }
     if((m = t.match(/^\[TEXT(?:\s+([A-Za-z0-9]+))?(?:\s*[|:\-–—]\s*([^\]]*))?\]$/i))){
@@ -11220,7 +11352,7 @@ function rlFinalizeTarea(t, errors, warnings){
 }
 
 function rlGetParsed(id){
-  const e = rlLibrary[id]; if(!e) return null;
+  const e = rlEntry(id); if(!e) return null;
   const k = id+':'+(e.updatedAt||0)+':'+(e.source||'').length;
   if(!rlParsedCache[k]){ Object.keys(rlParsedCache).forEach(x => { if(x.indexOf(id+':')===0) delete rlParsedCache[x]; }); rlParsedCache[k] = rlParseOne(e.source); }
   return rlParsedCache[k];
@@ -11246,15 +11378,15 @@ function rlLivePreview(){
 function rlImport(){
   const src = $('rlSource').value;
   if(!src.trim()){ rlStatus('Pega primero el texto generado por la IA.', 'pg-status-err'); return; }
-  const chunks = rlSplitExams(src); const msgs = []; let added = 0, updated = 0, dup = 0, failed = 0, items = 0;
+  const chunks = rlSplitExams(src); const msgs = []; let added = 0, updated = 0, dup = 0, failed = 0, items = 0; rlLastFailed = [];
   chunks.forEach((c, i) => {
     const r = rlParseOne(c); const label = chunks.length>1 ? `Examen ${i+1}${r.exam.title?' («'+rlEsc(r.exam.title)+'»)':''}: ` : '';
-    if(r.errors.length){ failed++; r.errors.slice(0,6).forEach(e => msgs.push(label + rlEsc(e))); if(r.errors.length>6) msgs.push(label+`…y ${r.errors.length-6} errores más.`); return; }
+    if(r.errors.length){ failed++; rlLastFailed.push({title:r.exam.title, source:c, errors:r.errors}); r.errors.slice(0,6).forEach(e => msgs.push(label + rlEsc(e))); if(r.errors.length>6) msgs.push(label+`…y ${r.errors.length-6} errores más.`); return; }
     r.warnings.slice(0,3).forEach(w => msgs.push('⚠ '+label+rlEsc(w)));
     const now = Date.now();
-    if(rlEditingId && chunks.length===1 && rlLibrary[rlEditingId]){
-      const old = rlLibrary[rlEditingId]; rlLibrary[rlEditingId] = {id:old.id, title:r.exam.title, level:r.exam.level, source:c, createdAt:old.createdAt||now, updatedAt:now}; updated++; items += r.exam.total; return; }
-    if(Object.values(rlLibrary).some(x => x.source === c)){ dup++; return; }
+    if(rlEditingId && chunks.length===1 && rlEntry(rlEditingId)){
+      const old = rlLibrary[rlEditingId]; rlLibrary[rlEditingId] = Object.assign({id:old.id, title:r.exam.title, level:r.exam.level, source:c, createdAt:old.createdAt||now, updatedAt:now}, old.communityId ? {communityId:old.communityId, communityPublishedAt:old.communityPublishedAt} : {}); updated++; items += r.exam.total; return; }
+    if(rlLive().some(x => x.source === c)){ dup++; return; }
     const id = rlUid('rl'); rlLibrary[id] = {id, title:r.exam.title, level:r.exam.level, source:c, createdAt:now, updatedAt:now}; added++; items += r.exam.total;
   });
   if(added || updated){ rlSaveLibrary(); rlRenderLibrary(); }
@@ -11263,6 +11395,7 @@ function rlImport(){
   if(updated) parts.push('✓ examen actualizado');
   if(dup) parts.push(`${dup} ya existía${dup===1?'':'n'}`);
   if(failed) parts.push(`${failed} con errores — corrige y vuelve a importar`);
+  if(failed) parts.push('<button class="pg-btn rl-mini" data-rl="repair-import">📋 Copiar prompt de corrección</button>');
   rlStatus(parts.join(' · ') + (msgs.length ? '<br>'+msgs.join('<br>') : ''), failed && !added && !updated ? 'pg-status-err' : 'pg-status-ok');
   if((added || updated) && !failed){ $('rlSource').value = ''; rlEditingId = null; $('rlLiveCount').textContent = ''; }
 }
@@ -11272,10 +11405,16 @@ function rlBuildPrompt(kind){
   const n = Math.max(1, Math.min(20, parseInt($('rlGenCount').value,10) || 3));
   const focus = $('rlGenFocus').value.trim();
   const real = $('rlGenReal').checked;
+  const scope = $('rlGenScope').value;
+  const sizes = {1:'Tarea 1 (1 texto, 6 preguntas a/b/c)', 2:'Tarea 2 (4 textos, 10 preguntas de correspondencia)', 3:'Tarea 3 (1 texto con 6 huecos y 8 fragmentos, 2 sobran)', 4:'Tarea 4 (1 texto con 14 huecos a/b/c)'};
+  const scopeTxt = scope==='all'
+    ? `Crea ${n} exámenes completos (4 tareas, 36 ítems, TIME_MINUTES: 70), con temas distintos entre sí. Títulos: «DELE B2 · Simulacro n · tema».`
+    : `Crea ${n} exámenes que contengan SOLO la ${sizes[scope]}: omite las demás tareas y la línea TIME_MINUTES. Temas distintos entre sí. Títulos: «DELE B2 · T${scope} · Simulacro n · tema».`;
   return RL_PROMPT_GENERATE
     .replace('__SOURCES__', () => (real ? RL_REAL_BLOCK : RL_ORIGINAL_BLOCK).replace(/__TODAY__/g, today))
-    .replace('__COUNT__', String(n))
-    .replace('__FOCUS__', () => focus ? 'FOCO / TEMAS PREFERIDOS: '+focus : '');
+    .replace('__SCOPE__', () => scopeTxt)
+    .replace('__FOCUS__', () => focus ? 'FOCO / TEMAS PREFERIDOS: '+focus : '')
+    .replace('__PLAN__', () => rlPlanText(n, scope));
 }
 function rlCopyPrompt(kind){
   const p = rlBuildPrompt(kind);
@@ -11284,7 +11423,7 @@ function rlCopyPrompt(kind){
 }
 
 /* ---------- library screen ---------- */
-function rlAttemptsFor(id){ return rlAttempts.filter(a => a.examId === id); }
+function rlAttemptsFor(id){ return rlLiveAttempts().filter(a => a.examId === id); }
 function rlShowScreen(name){
   rlScreen = name;
   ['Library','Brief','Exam','Result'].forEach(n => $('rl'+n+'Screen').classList.toggle('hidden', n.toLowerCase() !== name));
@@ -11292,25 +11431,25 @@ function rlShowScreen(name){
 }
 function rlRenderLibrary(){
   // stats
-  const all = rlAttempts, full = all.filter(a => a.scope==='all');
+  const all = rlLiveAttempts(), full = all.filter(a => a.scope==='all');
   const last5 = all.slice(-5); const avg = last5.length ? Math.round(last5.reduce((s,a)=>s+a.pct,0)/last5.length) : null;
   const best = all.length ? Math.max(...all.map(a=>a.pct)) : null;
   const today = new Date().toDateString(); const todayN = all.filter(a => new Date(a.at).toDateString()===today).length;
   $('rlStatSims').textContent = all.length; $('rlStatAvg').textContent = avg==null ? '—' : avg+'%';
   $('rlStatBest').textContent = best==null ? '—' : best+'%'; $('rlStatToday').textContent = todayN;
-  $('rlExamCount').textContent = Object.keys(rlLibrary).length;
+  $('rlExamCount').textContent = rlLive().length;
   // prefs
-  const pf = rlPrefs(); $('rlPace').value = String(pf.pace); $('rlImmediate').checked = !!pf.immediate;
+  const pf = rlPrefs(); $('rlPace').value = String(pf.pace); $('rlImmediate').checked = !!pf.immediate; $('rlShuffle').checked = pf.shuffle !== false;
   // resume banner
   const s = rlSess || rlLoadSess(); const rb = $('rlResume');
-  if(s && s.phase==='run' && rlLibrary[s.examId]){
+  if(s && s.phase==='run' && rlEntry(s.examId)){
     const p = rlGetParsed(s.examId); const nAns = Object.keys(s.answers||{}).length;
     rb.classList.remove('hidden');
     rb.innerHTML = `<div><b>${s.mode==='sim'?'Simulacro':'Práctica'} en curso</b> — ${rlEsc(p&&p.exam?p.exam.title:'')}<div class="pg-note">${nAns} respuestas guardadas${s.mode==='sim'?' · el reloj sigue corriendo':' · en pausa'}.</div></div>
       <div class="pg-actions" style="margin:0"><button class="pg-btn pg-btn-primary" data-rl="resume">Continuar</button><button class="pg-btn" data-rl="discard">Descartar</button></div>`;
   } else rb.classList.add('hidden');
   // exams
-  const ids = Object.keys(rlLibrary).sort((a,b) => (rlLibrary[b].updatedAt||0) - (rlLibrary[a].updatedAt||0));
+  const ids = rlLive().sort((a,b) => (b.createdAt||0) - (a.createdAt||0)).map(e => e.id);
   const box = $('rlExamList');
   if(!ids.length){ box.innerHTML = '<div class="pg-empty">Aún no tienes simulacros. Importa uno abajo, o restaura el examen modelo.</div>'; }
   else box.innerHTML = ids.map(id => {
@@ -11329,11 +11468,13 @@ function rlRenderLibrary(){
         <button class="pg-btn pg-btn-primary" data-rl="start" data-mode="sim" data-id="${id}" data-scope="all">▶ Simulacro</button>
         <button class="pg-btn" data-rl="start" data-mode="practice" data-id="${id}" data-scope="all">✍️ Práctica</button>
         <button class="pg-btn" data-rl="edit" data-id="${id}" title="Editar texto fuente">✏️</button>
+        ${rlPubBtnHtml(id, e)}
         <button class="pg-btn" data-rl="del" data-id="${id}" title="Eliminar">🗑</button>
-      </div>${drills}</div>`;
+      </div>${drills}${rlCardExtras(id, p, e)}</div>`;
   }).join('');
   // seed restore visibility
-  $('rlRestoreSeedBtn').classList.toggle('hidden', !!rlLibrary[RL_SEED_ID] && !!rlLibrary[RL_SEED2_ID]);
+  $('rlRestoreSeedBtn').classList.toggle('hidden', !!rlEntry(RL_SEED_ID) && !!rlEntry(RL_SEED2_ID));
+  rlRenderSyncLine();
   // trend + history
   const tr = $('rlTrend'); const recent = all.slice(-16);
   if(!recent.length){ tr.innerHTML = '<div class="pg-empty">Tus resultados aparecerán aquí.</div>'; }
@@ -11351,7 +11492,8 @@ function rlStart(examId, scope, mode){
   const idxs = scope==='all' ? ex.tareas.map(t=>t.idx) : [Number(scope)];
   const limitSec = scope==='all' ? Math.round(ex.timeMinutes*60*pf.pace) : Math.round(rlTareaPaceSecs(ex, ex.tareas[Number(scope)])*pf.pace);
   rlReview = null;
-  rlSess = {examId, mode, scope:scope==='all'?'all':Number(scope), idxs, limitSec, factor:pf.pace, immediate: mode==='practice' && !!pf.immediate,
+  const seed = rlShouldShuffle(examId, ex) ? Math.floor(Math.random()*2147483646)+1 : 0;
+  rlSess = {examId, seed, mode, scope:scope==='all'?'all':Number(scope), idxs, limitSec, factor:pf.pace, immediate: mode==='practice' && !!pf.immediate,
     phase:'brief', startedAt:0, pausedAt:0, pausedTotal:0, lastTick:0, cur:idxs[0], answers:{}, flags:{}, tareaSecs:{}, active:null};
   rlSaveSess(); rlRenderBrief(); rlShowScreen('brief');
 }
@@ -11372,7 +11514,7 @@ function rlBegin(){
   rlSaveSess(); rlRenderExam(); rlShowScreen('exam'); rlStartTimer(); document.addEventListener('keydown', rlOnKey);
 }
 function rlResume(){
-  const s = rlSess || rlLoadSess(); if(!s || !rlLibrary[s.examId]) return;
+  const s = rlSess || rlLoadSess(); if(!s || !rlEntry(s.examId)) return;
   rlSess = s; rlReview = null;
   if(s.phase==='brief'){ rlRenderBrief(); rlShowScreen('brief'); return; }
   const now = Date.now();
@@ -11419,10 +11561,10 @@ function rlPersist(){ if(rlSess && rlSess.phase==='run' && !rlReview) rlSaveSess
 
 /* ---------- exam screen ---------- */
 function rlCtx(){
-  if(rlReview){ const a = rlReview.attempt, p = rlGetParsed(a.examId);
-    return {review:true, exam:p&&p.exam, idxs:a.idxs, answers:a.answers||{}, flags:{}, cur:rlReview.cur, immediate:false, active:rlReview.active}; }
-  const s = rlSess, p = rlGetParsed(s.examId);
-  return {review:false, exam:p.exam, idxs:s.idxs, answers:s.answers, flags:s.flags, cur:s.cur, immediate:s.immediate, active:s.active};
+  if(rlReview){ const a = rlReview.attempt, p = rlParsedFor(a.examId, a.seed);
+    return {review:true, exam:p&&p.exam, idxs:a.idxs, answers:a.answers||{}, flags:{}, cur:rlReview.cur, immediate:false, active:rlReview.active, doubt:rlDoubtSet(a.examId)}; }
+  const s = rlSess, p = rlParsedFor(s.examId, s.seed);
+  return {review:false, exam:p.exam, idxs:s.idxs, answers:s.answers, flags:s.flags, cur:s.cur, immediate:s.immediate, active:s.active, doubt:rlDoubtSet(s.examId)};
 }
 function rlFmtText(body, t, ctx){
   const byLabel = {}; t.items.forEach(it => { if(it.label) byLabel[it.label] = it; });
@@ -11457,7 +11599,7 @@ function rlItemHtml(t, it, ctx){
     const right = it.options.find(o=>o.key===it.answer);
     const rightTxt = t.type==='MATCH' ? it.answer+' · '+(right?right.text:'') : t.type==='FRAGMENTS' ? it.answer : it.answer+') '+(right?right.text:'');
     const verdict = !v ? 'Sin responder' : v===it.answer ? '✓ Correcta' : '✗ Incorrecta';
-    fb = `<div class="pg-tip rl-fb ${!v?'':(v===it.answer?'good':'wrong')}"><b>${verdict}</b>${v===it.answer?'':` · Correcta: <b>${rlEsc(rightTxt)}</b>`}${it.why?`<div>${rlEsc(it.why)}</div>`:''}</div>`;
+    fb = `<div class="pg-tip rl-fb ${!v?'':(v===it.answer?'good':'wrong')}"><b>${verdict}</b>${v===it.answer?'':` · Correcta: <b>${rlEsc(rightTxt)}</b>`}${it.why?`<div>${rlEsc(it.why)}</div>`:''}${ctx.doubt && ctx.doubt.has(it.id)?'<div class="rl-doubt-note">⚠ Otra IA no coincidió con esta clave: la pregunta puede ser ambigua o la clave estar mal.</div>':''}</div>`;
   }
   return `<div class="rl-item${isAct?' active':''}" id="rl-it-${it.id}" data-rl="act" data-item="${it.id}">
     <div class="rl-item-row"><button type="button" class="rl-qnum${fl?' flag':''}" data-rl="flag" data-item="${it.id}" title="Marcar para revisar (M)">${it.num}${fl?'<i>⚑</i>':''}</button><div class="rl-item-main">${inner}</div></div>${fb}</div>`;
@@ -11581,7 +11723,7 @@ function rlSubmit(auto){
 }
 function rlSubmitInner(s, auto){
   rlTick();
-  const ex = rlGetParsed(s.examId).exam;
+  const ex = rlParsedFor(s.examId, s.seed).exam;
   if(!auto){
     const total = s.idxs.reduce((a,i)=>a+ex.tareas[i].items.length,0), ans = Object.keys(s.answers).length, fl = Object.keys(s.flags).length;
     const msg = (ans<total ? `Te quedan ${total-ans} preguntas sin responder. ` : '') + (fl ? `Tienes ${fl} marcada${fl===1?'':'s'} para revisar. ` : '') + '¿Entregar ahora?';
@@ -11593,14 +11735,14 @@ function rlSubmitInner(s, auto){
     correct += c; total += t.items.length;
     return {idx:i, n:t.n, type:t.type, title:t.title, correct:c, total:t.items.length, secs:Math.round(s.tareaSecs[i]||0), paceSecs:Math.round(rlTareaPaceSecs(ex,t)*(s.scope==='all'?s.factor:1))}; });
   const att = {id:rlUid('at'), examId:s.examId, examTitle:ex.title, mode:s.mode, scope:s.scope, scopeN:s.scope==='all'?0:ex.tareas[s.scope].n, idxs:s.idxs,
-    at:Date.now(), correct, total, pct:Math.round(correct/total*100), secs:Math.round(secs), limitSec:s.limitSec, factor:s.factor, auto:!!auto, answers:s.answers, perTarea:per, flagged:Object.keys(s.flags).length};
+    at:Date.now(), correct, total, pct:Math.round(correct/total*100), secs:Math.round(secs), limitSec:s.limitSec, factor:s.factor, auto:!!auto, answers:s.answers, perTarea:per, flagged:Object.keys(s.flags).length, seed:s.seed||0};
   rlAttempts.push(att); rlSaveAttempts();
   rlStopTimer(); rlClearSess(); $('rlPauseOv').classList.add('hidden'); $('rlSheet').classList.add('hidden');
   rlShowResult(att);
 }
 function rlShowResult(att){
   rlResultAttempt = att; rlReview = null;
-  const p = rlGetParsed(att.examId); const ex = p && p.exam;
+  const p = rlParsedFor(att.examId, att.seed); const ex = p && p.exam;
   const scaled = (att.correct * 25 / att.total);
   const verdict = att.pct>=60 ? 'Por encima del 60 %' : 'Por debajo del 60 %';
   const tareaRows = att.perTarea.map(r => { const pc = Math.round(r.correct/r.total*100); const over = r.secs > r.paceSecs;
@@ -11628,20 +11770,334 @@ function rlStartReview(att){
 }
 function rlToLibrary(){ rlReview = null; rlStopTimer(); rlRenderLibrary(); rlShowScreen('library'); }
 
+/* ===RLPURE-START=== (pure helpers; unit-tested outside the browser) */
+/* ---------- anti-bias: seeded shuffle ---------- */
+function rlRng(seed){ let a = seed >>> 0; return function(){ a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+function rlShuf(arr, rnd){ for(let i = arr.length - 1; i > 0; i--){ const j = Math.floor(rnd() * (i + 1)); const x = arr[i]; arr[i] = arr[j]; arr[j] = x; } return arr; }
+const RL_POSITIONAL = /\b(todas|todos|ambas|ambos|ninguna|ninguno|anteriores|a y b|b y c|a y c)\b/i;
+// Mutates a FRESH parse. Letters/positions are scrambled, the correct content never changes.
+function rlApplyShuffle(exam, seed){
+  const rnd = rlRng(seed);
+  exam.tareas.forEach(t => {
+    if(t.type==='MC' || t.type==='CLOZE'){
+      t.items.forEach(it => {
+        if(it.options.some(o => RL_POSITIONAL.test(o.text))) return;      // "todas las anteriores" style options stay put
+        const keys = it.options.map(o => o.key), texts = it.options.map(o => o.text), ai = keys.indexOf(it.answer);
+        if(ai < 0) return;
+        const order = rlShuf(texts.map((_, i) => i), rnd);
+        it.options = order.map((oi, pos) => ({key:keys[pos], text:texts[oi]}));
+        it.answer = keys[order.indexOf(ai)];
+      });
+    } else if(t.type==='FRAGMENTS'){
+      const old = t.fragments, keys = old.map(f => f.key).sort(), map = {};
+      const order = rlShuf(old.map((_, i) => i), rnd);
+      const nf = order.map((oi, pos) => { map[old[oi].key] = keys[pos]; return {key:keys[pos], text:old[oi].text}; });
+      t.fragments = nf; t.items.forEach(it => { it.options = nf; it.answer = map[it.answer] || it.answer; });
+    } else if(t.type==='MATCH'){
+      const lab = t.texts.filter(x => x.label), keys = lab.map(x => x.label).sort(), map = {};
+      const order = rlShuf(lab.map((_, i) => i), rnd);
+      const nt = order.map((oi, pos) => { map[lab[oi].label] = keys[pos]; return Object.assign({}, lab[oi], {label:keys[pos]}); }).sort((a, b) => a.label < b.label ? -1 : 1);
+      t.texts = nt.concat(t.texts.filter(x => !x.label));
+      const opts = nt.map(x => ({key:x.label, text:x.name || ('Texto ' + x.label)}));
+      t.items.forEach(it => { it.answer = map[it.answer] || it.answer; it.options = opts; });
+      rlShuf(t.items, rnd);
+    }
+  });
+  let num = 0; exam.tareas.forEach(t => t.items.forEach(it => { it.num = ++num; }));
+}
+
+/* ---------- random answer plan for the generation prompt ---------- */
+function rlRandPlan(n, k, rnd){
+  rnd = rnd || Math.random; let arr = [];
+  for(let tries = 0; tries < 500; tries++){
+    arr = []; for(let i = 0; i < n; i++) arr.push(i % k); rlShuf(arr, rnd);
+    let ok = true, asc = true, cyc = true;
+    for(let i = 2; i < n; i++) if(arr[i] === arr[i-1] && arr[i] === arr[i-2]) ok = false;
+    for(let i = 1; i < n; i++){ if(arr[i] <= arr[i-1]) asc = false; if(arr[i] !== (arr[0] + i) % k) cyc = false; }
+    if(ok && !asc && !cyc) return arr;
+  }
+  return arr;
+}
+function rlPlanText(count, scope, rnd){
+  const L = (arr, up) => arr.map(i => String.fromCharCode((up ? 65 : 97) + i)).join(', ');
+  const lines = [];
+  for(let e = 1; e <= count; e++){
+    const parts = [];
+    if(scope==='all' || scope==='1') parts.push('T1 (respuesta de cada pregunta, en orden): ' + L(rlRandPlan(6, 3, rnd), false));
+    if(scope==='all' || scope==='2') parts.push('T2 (texto A-D que contesta cada pregunta, en orden): ' + L(rlRandPlan(10, 4, rnd), true));
+    if(scope==='all' || scope==='3'){
+      let perm; do { perm = rlShuf([0,1,2,3,4,5,6,7], rnd || Math.random); } while(perm.slice(0,6).every((v, i, a) => i === 0 || v > a[i-1]));
+      parts.push('T3 (fragmento correcto de cada hueco, en el orden en que aparecen; los otros dos, ' + L(perm.slice(6), true) + ', son distractores): ' + L(perm.slice(0,6), true));
+    }
+    if(scope==='all' || scope==='4') parts.push('T4 (hueco por hueco): ' + L(rlRandPlan(14, 3, rnd), false));
+    lines.push(`EXAMEN ${e} → ` + parts.join('  |  '));
+  }
+  return lines.join('\n');
+}
+
+/* ---------- quality lint for imported exams ---------- */
+const rlWords = s => (String(s).toLowerCase().match(/[a-záéíóúüñ]+/g) || []);
+function rlLint(exam){
+  const out = []; const W = (t, msg, kind) => out.push({tarea:t.n, msg, kind:kind || 'quality'});
+  const std = {MC:6, MATCH:10, FRAGMENTS:6, CLOZE:14};
+  const real = {MC:'450-600', MATCH:'450-650 en total', FRAGMENTS:'350-450', CLOZE:'300-380'};
+  const minW = {MC:350, MATCH:300, FRAGMENTS:250, CLOZE:220};
+  exam.tareas.forEach(t => {
+    const N = t.items.length;
+    if(std[t.type] && N !== std[t.type]) W(t, `trae ${N} ítems; el DELE B2 usa ${std[t.type]}.`);
+    const textWords = t.texts.reduce((a, x) => a + rlWords(x.body).length, 0);
+    if(textWords < minW[t.type]) W(t, `texto corto (${textWords} palabras; el examen real ronda ${real[t.type]}).`);
+    if(t.type==='FRAGMENTS' && t.fragments.length !== N + 2) W(t, `hay ${t.fragments.length} fragmentos para ${N} huecos; el DELE da ${N + 2} (2 sobran).`);
+    // answer patterns
+    if(N >= 4){
+      const idx = t.items.map(i => i.answer.toLowerCase().charCodeAt(0) - 97);
+      const k = Math.max(2, t.items[0].options.length);
+      let asc = true, cyc = true, run = 1, maxRun = 1;
+      for(let i = 1; i < N; i++){ if(idx[i] <= idx[i-1]) asc = false; if(idx[i] !== (idx[0] + i) % k) cyc = false; run = idx[i] === idx[i-1] ? run + 1 : 1; maxRun = Math.max(maxRun, run); }
+      if(asc) W(t, 'las respuestas correctas van en orden alfabético (A, B, C, D…): se adivina sin leer.', 'pattern');
+      else if(cyc && N >= 5) W(t, 'las respuestas siguen un ciclo (a-b-c-a-b-c…): se adivina sin leer.', 'pattern');
+      if(maxRun >= 3 && t.type!=='FRAGMENTS') W(t, `la misma letra se repite ${maxRun} veces seguidas.`, 'pattern');
+      if(N >= 10 && t.type!=='FRAGMENTS'){
+        const cnt = {}; idx.forEach(v => cnt[v] = (cnt[v] || 0) + 1);
+        const mx = Math.max(...Object.values(cnt));
+        if(mx / N > 0.5) W(t, `una sola letra concentra ${mx} de ${N} respuestas.`, 'pattern');
+      }
+    }
+    if(t.type==='MC' || t.type==='CLOZE'){
+      t.items.forEach((it, i) => { const seen = {}; it.options.forEach(o => { const q = o.text.toLowerCase().trim(); if(seen[q]) W(t, `pregunta ${i+1}: hay dos opciones idénticas («${o.text}»).`); seen[q] = 1; }); });
+    }
+    if(t.type==='MC' && N >= 5){
+      const textSet = new Set(rlWords(t.texts.map(x => x.body).join(' ')).filter(w => w.length >= 5));
+      let longest = 0, copied = 0;
+      t.items.forEach(it => {
+        const ok = it.options.find(o => o.key === it.answer); if(!ok) return;
+        const others = it.options.filter(o => o !== ok);
+        if(others.every(o => ok.text.length > o.text.length)) longest++;
+        const ratio = o => { const w = rlWords(o.text).filter(x => x.length >= 5); return w.length ? w.filter(x => textSet.has(x)).length / w.length : 0; };
+        if(others.every(o => ratio(ok) > ratio(o))) copied++;
+      });
+      if(longest >= Math.ceil(N * 0.66)) W(t, `la opción correcta es la más larga en ${longest} de ${N} preguntas (pista involuntaria).`);
+      if(copied >= Math.ceil(N * 0.84)) W(t, `la opción correcta es la que más copia el texto en ${copied} de ${N} preguntas: debería ser una paráfrasis.`);
+    }
+    if(t.type==='MATCH'){
+      const labels = t.texts.filter(x => x.label).map(x => x.label), cnt = {};
+      labels.forEach(l => cnt[l] = 0); t.items.forEach(it => { cnt[it.answer] = (cnt[it.answer] || 0) + 1; });
+      labels.forEach(l => { if(!cnt[l]) W(t, `el texto ${l} no contesta ninguna pregunta.`); else if(cnt[l] > Math.ceil(N / labels.length) + 2) W(t, `el texto ${l} contesta ${cnt[l]} de ${N} preguntas.`); });
+      const sets = {}; t.texts.filter(x => x.label).forEach(x => sets[x.label] = new Set(rlWords(x.body).filter(w => w.length >= 6)));
+      let literal = 0;
+      t.items.forEach(it => { const sw = [...new Set(rlWords(it.stem).filter(w => w.length >= 6))]; if(sw.length < 3) return;
+        const r = {}; labels.forEach(l => r[l] = sw.filter(w => sets[l].has(w)).length / sw.length);
+        const c = r[it.answer] || 0, others = Math.max(0, ...labels.filter(l => l !== it.answer).map(l => r[l]));
+        if(c >= 0.6 && c - others >= 0.4) literal++; });
+      if(literal >= 4) W(t, `${literal} preguntas repiten casi literalmente palabras del texto correcto: demasiado fácil frente al examen real.`);
+    }
+    if(t.type==='FRAGMENTS'){
+      const body = t.texts.map(x => x.body).join(' ').toLowerCase();
+      t.fragments.forEach(f => { const head = f.text.toLowerCase().slice(0, 30); if(head.length >= 20 && body.includes(head)) W(t, `el fragmento ${f.key} ya aparece escrito en el texto.`); });
+    }
+  });
+  return out;
+}
+
+/* ---------- blind cross-check prompt ---------- */
+function rlBlindText(exam){
+  let o = '';
+  exam.tareas.forEach(t => {
+    o += `\n=== TAREA ${t.n}: ${t.title} (${RL_TYPE_LABEL[t.type]}) ===\n`;
+    if(t.instructions) o += t.instructions + '\n';
+    const byLabel = {}; t.items.forEach(it => { if(it.label) byLabel[it.label] = it; });
+    t.texts.forEach(x => { o += '\n' + (x.label ? `TEXTO ${x.label}${x.name ? ' (' + x.name + ')' : ''}:\n` : '') + x.body.replace(/\[\[(\d+)\]\]/g, (a, n) => byLabel[n] ? `[${byLabel[n].num}]` : a) + '\n'; });
+    if(t.type==='FRAGMENTS') o += '\nFRAGMENTOS (dos sobran):\n' + t.fragments.map(f => `${f.key}) ${f.text}`).join('\n') + '\nHuecos a rellenar: ' + t.items.map(i => i.num).join(', ') + '\n';
+    else if(t.type==='CLOZE') o += '\nOPCIONES:\n' + t.items.map(i => `${i.num}. ` + i.options.map(x => `${x.key}) ${x.text}`).join('   ')).join('\n') + '\n';
+    else if(t.type==='MATCH') o += '\nPREGUNTAS (responde con la letra del texto: ' + t.items[0].options.map(x => x.key).join('/') + '):\n' + t.items.map(i => `${i.num}. ${i.stem}`).join('\n') + '\n';
+    else o += '\nPREGUNTAS:\n' + t.items.map(i => `${i.num}. ${i.stem}\n` + i.options.map(x => `   ${x.key}) ${x.text}`).join('\n')).join('\n') + '\n';
+  });
+  return o;
+}
+/* ===RLPURE-END=== */
+
+function rlShouldShuffle(id, exam){ return rlPrefs().shuffle !== false && exam.shuffle !== false && id !== RL_SEED_ID && id !== RL_SEED2_ID; }
+function rlParsedFor(id, seed){
+  const base = rlGetParsed(id); if(!base || !seed || base.errors.length) return base;
+  const k = id + ':' + seed + ':' + (rlLibrary[id].updatedAt || 0);
+  if(rlShufCache.k === k) return rlShufCache.v;
+  const r = rlParseOne(rlLibrary[id].source); rlApplyShuffle(r.exam, seed); rlShufCache = {k, v:r}; return r;
+}
+function rlDoubtSet(examId){ const e = rlLibrary[examId]; return new Set(e && e.verify ? (e.verify.doubtIds || []) : []); }
+
+/* ---------- toast + clipboard ---------- */
+let rlToastT = null;
+function rlToast(msg, bad){ const el = $('rlToast'); el.textContent = msg; el.className = 'rl-toast' + (bad ? ' bad' : ''); clearTimeout(rlToastT); rlToastT = setTimeout(() => el.classList.add('hidden'), 4500); }
+function rlCopy(text, okMsg){
+  vmCopyToClipboard(text).then(() => rlToast(okMsg))
+    .catch(() => { $('rlSource').value = text; rlLivePreview(); rlToast('El navegador bloqueó la copia: el texto está en el cuadro de importación (selecciónalo y cópialo; luego vacíalo).', true); $('rlSource').scrollIntoView({behavior:'smooth', block:'center'}); });
+}
+
+/* ---------- library card extras: lint badge + cross-check ---------- */
+/* ---------- Comunidad: publicar / importar simulacros de lectura ----------
+   Reutiliza la tabla community_sets que ya existe (sin SQL nuevo), igual que Foto:
+   kind:'reading' + algo_source = el texto fuente completo del examen (formato EXAM_TITLE/TAREA…),
+   cards = [] y card_count = nº de preguntas. No toca SETS_KEY: los exámenes siguen en su biblioteca. */
+function rlPubBtnHtml(id, e){
+  if(RL_SEED_MAP[id]) return '';   // modelos oficiales del Cervantes: no se republican
+  return `<button class="pg-btn" data-rl="publish" data-id="${id}" title="${e && e.communityId ? 'Ya está en Comunidad — pulsa para actualizarlo' : 'Compartir este simulacro en Comunidad'}">${e && e.communityId ? '☁️ Publicado' : '🌐 Publicar'}</button>`;
+}
+async function rlPublishToCommunity(id){
+  const entry = rlEntry(id); if(!entry) return;
+  if(RL_SEED_MAP[id]){ alert('Los modelos oficiales del Instituto Cervantes no se publican en Comunidad.'); return; }
+  const parsed = rlParseOne(entry.source || '');
+  if(parsed.errors.length){ alert('Este examen tiene errores de formato; corrígelo antes de publicarlo:\n\n' + parsed.errors.slice(0,4).join('\n')); return; }
+  const sb = getSupabase();
+  if(!sb || !currentUser){ alert('Inicia sesión primero — Ajustes → Cuenta y sincronización.'); return; }
+  if(!communityUsername) await loadCommunityProfile();
+  if(!communityUsername){
+    const chosen = prompt('Elige un nombre de usuario para publicar (lo verán otros usuarios):');
+    if(!chosen) return;
+    const res = await saveCommunityUsername(chosen);
+    if(res.error){ alert(res.error); return; }
+  }
+  const title = entry.title || parsed.exam.title || 'Simulacro de lectura';
+  // Sin description/subject/topic aquí: así una republicación no pisa lo que el usuario editó en «Tu Comunidad».
+  const row = {
+    owner_id: currentUser.id, username: communityUsername, title,
+    kind: 'reading', cards: [], card_count: parsed.exam.total || 0, algo_source: entry.source
+  };
+  let linkedId = entry.communityId || null;
+  if(!linkedId){
+    const { data: existing } = await sb.from('community_sets').select('id').eq('owner_id', currentUser.id).eq('title', title).eq('kind', 'reading').maybeSingle();
+    if(existing && existing.id && confirm(`Ya tienes un simulacro de lectura publicado como "${title}" — ¿actualizarlo en vez de publicar una copia nueva?`)) linkedId = existing.id;
+  }
+  let result = null, updated = false;
+  if(linkedId){
+    result = await sb.from('community_sets').update(row).eq('id', linkedId).eq('owner_id', currentUser.id).select('id').maybeSingle();
+    updated = !result.error && !!(result.data && result.data.id);
+    // Vínculo local obsoleto (la fila ya no existe en la nube): publicar como nuevo en vez de fallar en silencio.
+    if(!result.error && !updated) linkedId = null;
+  }
+  if(!linkedId){
+    result = await sb.from('community_sets').insert(row).select('id').maybeSingle();
+  }
+  if(result.error){ alert('No se pudo publicar: ' + result.error.message); return; }
+  const newId = result.data && result.data.id;
+  const cur = rlEntry(id) || entry;
+  if(newId) cur.communityId = newId;
+  cur.communityPublishedAt = new Date().toISOString();
+  cur.updatedAt = Date.now();
+  rlLibrary[id] = cur;
+  rlSaveLibrary(); rlRenderLibrary();
+  invalidateCommunityMineCache(); invalidateCommunityFeedCaches();
+  alert(updated ? 'Actualizado en Comunidad.' : '¡Publicado en Comunidad!');
+}
+async function rlImportFromCommunity(data, communitySetId, sb){
+  const src = data.algo_source || '';
+  const r = rlParseOne(src);
+  if(!src.trim() || r.errors.length){ alert('Este simulacro tiene un formato que no se puede leer' + (r.errors[0] ? ': ' + r.errors[0] : '.')); return; }
+  if(rlLive().some(x => x.source === src)){ alert(`«${data.title}» ya está en tu biblioteca de Lectura.`); return; }
+  if(!confirm(`¿Añadir «${data.title}» (${r.exam.total} preguntas) a tu biblioteca de Lectura?`)) return;
+  const now = Date.now(), id = rlUid('rl');
+  rlLibrary[id] = {id, title: data.title || r.exam.title, level: r.exam.level, source: src, createdAt: now, updatedAt: now};
+  rlSaveLibrary();
+  try{ await sb.rpc('increment_community_import', { p_set_id: communitySetId }); }catch(e){}
+  const row = communityBrowseCache.find(x => x.id === communitySetId);
+  if(row) row.import_count = Number(row.import_count||0) + 1;
+  closeCommunityPreview();
+  applyCommunitySearchFilter();
+  alert(`Añadido «${data.title}» — lo encuentras en 📖 Lectura.`);
+}
+
+function rlCardExtras(id, p, e){
+  const shufOn = rlShouldShuffle(id, p.exam);
+  const issues = rlLint(p.exam);
+  const real = issues.filter(x => !(shufOn && x.kind==='pattern'));
+  let h = '<div class="rl-qa">';
+  if(e.verify){ const v = e.verify, nums = v.doubtNums || [];
+    h += `<div class="pg-note ${nums.length ? 'pg-status-err' : 'pg-status-ok'}">${nums.length ? '⚠' : '✔'} Verificado con otra IA: ${v.agree}/${v.total} coinciden${nums.length ? ' · dudosas: nº ' + nums.join(', ') : ''}</div>`; }
+  if(issues.length){
+    h += `<details class="rl-lint"><summary>${real.length ? `⚠ ${real.length} aviso${real.length === 1 ? '' : 's'} de calidad` : 'ℹ️ Avisos menores (neutralizados al mezclar)'}</summary><ul>` +
+      issues.map(x => `<li${shufOn && x.kind==='pattern' ? ' class="dim"' : ''}><b>T${x.tarea}</b> ${rlEsc(x.msg)}${shufOn && x.kind==='pattern' ? ' <i>(se neutraliza con «Mezclar opciones»)</i>' : ''}</li>`).join('') +
+      `</ul><button class="pg-btn rl-mini" data-rl="repair" data-id="${id}">📋 Prompt de corrección</button></details>`;
+  } else h += '<div class="pg-note pg-status-ok">✔ Sin avisos de calidad automáticos</div>';
+  h += `<div class="rl-qa-btns"><button class="pg-btn rl-mini" data-rl="verify-copy" data-id="${id}" title="Copia el examen SIN claves para que otra IA lo resuelva">🔍 Examen a ciegas</button><button class="pg-btn rl-mini" data-rl="verify-open" data-id="${id}">✔ Comparar respuestas de otra IA</button></div></div>`;
+  return h;
+}
+
+/* ---------- repair prompts ---------- */
+function rlRepairText(title, problems, source){
+  return 'Corrige este examen de DELE B2 · Comprensión de lectura' + (title ? ' («' + title + '»)' : '') + '.\n\nProblemas detectados automáticamente:\n' +
+    problems.map(x => '- ' + x).join('\n') +
+    '\n\nInstrucciones: arregla SOLO lo necesario (mantén tema, texto y estructura salvo que el problema lo exija); si cambias un texto, ajusta también preguntas y respuestas; no cambies el formato. Si una pregunta es ambigua, reescríbela para que solo una opción sea defendible. Antes de entregar, resuelve a ciegas cada pregunta y comprueba que coincide con tu ANSWER. Devuélvelo COMPLETO, en un único bloque de código y en el mismo formato.\n\nExamen actual:\n```\n' + source + '\n```';
+}
+function rlRepairPrompt(id){
+  const e = rlLibrary[id], p = rlGetParsed(id); const probs = [];
+  (p.errors || []).forEach(x => probs.push('FORMATO: ' + x));
+  if(p.exam) rlLint(p.exam).forEach(x => probs.push(`Tarea ${x.tarea}: ${x.msg}`));
+  if(e.verify && e.verify.notes) e.verify.notes.forEach(x => probs.push('OTRA IA DISCREPA: ' + x));
+  if(!probs.length) probs.push('(ninguno automático: revisa la calidad general y la ambigüedad de las respuestas)');
+  return rlRepairText(e.title, probs, e.source);
+}
+function rlRepairImportPrompt(){
+  const f = rlLastFailed[0]; if(!f) return '';
+  const extra = rlLastFailed.length > 1 ? `\n\n(Hay ${rlLastFailed.length} exámenes con errores; este es el primero. Repite el proceso con los demás.)` : '';
+  return rlRepairText(f.title, f.errors.map(x => 'FORMATO: ' + x), f.source) + extra;
+}
+
+/* ---------- blind cross-check ---------- */
+function rlBlindPrompt(id){
+  const p = rlGetParsed(id);
+  return 'Eres un candidato experto del DELE B2. Resuelve A CIEGAS este examen de Comprensión de lectura: no tienes la clave y no debes inventar nada.\n\n' +
+    'RESPONDE SOLO con una línea por pregunta, con este formato exacto: «número: letra» (por ejemplo «7: C»). Usa minúsculas en las Tareas 1 y 4 (a/b/c) y mayúsculas en la Tarea 2 (A-D) y en la Tarea 3 (A-H; cada fragmento solo se usa una vez). ' +
+    'Si dudas, si dos opciones te parecen igual de válidas o si ninguna lo es, añade «?» detrás de la letra. Al final, en una línea que empiece por «NOTAS:», resume en una frase cualquier pregunta ambigua o con error. No añadas nada más.\n' +
+    rlBlindText(p.exam);
+}
+function rlVerifyRun(){
+  const id = rlVerifyId, p = id && rlGetParsed(id), out = $('rlVerifyOut'); if(!p || !p.exam) return;
+  const text = $('rlVerifyIn').value; const ans = {};
+  text.split('\n').forEach(l => { const m = l.match(/^\s*[*#\-\s]*(\d+)\s*[:.)\-–=]\s*\**\s*([A-Ha-h])\b\**\s*(\?)?/); if(m && !(m[1] in ans)) ans[m[1]] = {k:m[2], unsure:!!m[3]}; });
+  const items = []; p.exam.tareas.forEach(t => t.items.forEach(it => items.push({it, t})));
+  let agree = 0, answered = 0; const dis = [], uns = [], doubt = new Set(), notes = [];
+  items.forEach(({it, t}) => { const a = ans[it.num]; if(!a) return; answered++;
+    if(a.k.toLowerCase() === it.answer.toLowerCase()) agree++; else { dis.push({it, t, ai:a.k}); doubt.add(it.id); notes.push(`Pregunta ${it.num} (Tarea ${t.n}): la clave dice ${it.answer.toUpperCase()}, pero otra IA resolviendo a ciegas respondió ${a.k.toUpperCase()}.`); }
+    if(a.unsure){ uns.push(it); doubt.add(it.id); } });
+  if(answered < Math.ceil(items.length / 2)){ out.innerHTML = `<div class="pg-note pg-status-err">Solo he podido leer ${answered} respuestas de ${items.length}. Pide a la IA el formato «número: letra», una por línea.</div>`; return; }
+  const nums = items.filter(x => doubt.has(x.it.id)).map(x => x.it.num);
+  const e = rlLibrary[id]; e.updatedAt = Date.now(); e.verify = {at:Date.now(), agree, total:items.length, answered, doubtIds:[...doubt], doubtNums:nums, notes}; rlSaveLibrary(); rlRenderLibrary();
+  out.innerHTML = `<div class="rl-vsum ${nums.length ? 'bad' : 'ok'}"><b>${agree}/${items.length}</b> coinciden con tu clave${answered < items.length ? ` (${items.length - answered} sin responder)` : ''}.</div>` +
+    (dis.length ? '<ul class="rl-vlist">' + dis.map(d => `<li><b>${d.it.num}</b> · T${d.t.n}: clave <b>${rlEsc(d.it.answer.toUpperCase())}</b> · otra IA <b>${rlEsc(d.ai.toUpperCase())}</b><div class="pg-note">${rlEsc(d.it.stem || (d.t.type==='FRAGMENTS' ? 'Hueco ' + d.it.num : 'Hueco ' + d.it.num))}</div></li>`).join('') + '</ul>' : '<div class="pg-note pg-status-ok">Ninguna discrepancia: la clave parece sólida.</div>') +
+    (uns.length ? `<div class="pg-note">Marcadas con «?» por la otra IA: nº ${uns.map(i => i.num).join(', ')}.</div>` : '') +
+    (nums.length ? '<div class="pg-actions"><button class="pg-btn pg-btn-primary" data-rl="repair-verify">📋 Prompt de corrección con estas discrepancias</button></div><div class="pg-note">Las preguntas dudosas quedan marcadas con ⚠ al revisar tus intentos.</div>' : '');
+}
+
 /* ---------- wiring ---------- */
-function rlAddSeed(id, text){
-  if(rlLibrary[id]) return false;
+function rlAddSeed(id, text, stamp){
+  if(rlEntry(id)) return false;                // a tombstone (deleted copy) is replaced; a live copy is kept
   const r = rlParseOne(text); const now = Date.now();
-  rlLibrary[id] = {id, title:r.exam.title, level:r.exam.level, source:text, createdAt:now, updatedAt:now};
+  // auto-seeding uses updatedAt=1 so any real edit or deletion made on another device always wins the sync merge
+  rlLibrary[id] = {id, title:r.exam.title, level:r.exam.level, source:text, seed:true, createdAt:now, updatedAt:stamp || now};
   return true;
+}
+function rlRenderSyncLine(){
+  const el = $('rlSyncLine'), btn = $('rlSyncNowBtn'); if(!el) return;
+  if(typeof currentUser === 'undefined' || !currentUser){
+    el.className = 'pg-note pg-status-err'; el.textContent = '☁️ Sin sesión: tus simulacros solo están en este dispositivo. Inicia sesión (Ajustes → Cuenta) para sincronizarlos entre dispositivos.'; btn.classList.add('hidden'); return; }
+  const st = $('syncStatusLine'); const raw = st && st.textContent && st.textContent !== '—' ? st.textContent : '';
+  const status = !navigator.onLine ? '📴 Sin conexión: se sincronizará al volver' : (raw || '✅ Cuenta conectada');
+  el.className = 'pg-note pg-status-ok'; el.textContent = '☁️ Sincronización activa · ' + status + ' · simulacros, intentos y dudas viajan contigo';
+  btn.classList.remove('hidden');
+}
+function rlSyncLineUpdate(){ const v = $('readingView'); if(v && !v.classList.contains('hidden')) rlRenderSyncLine(); }
+async function rlSyncNow(){
+  rlToast('Sincronizando…');
+  try{ await fullSync(); }catch(e){ console.error(e); }
+  rlLibrary = rlLoadLibrary(); rlAttempts = rlLoadAttempts(); rlRenderLibrary();
+  rlToast('✓ Sincronización terminada: biblioteca e historial actualizados.');
 }
 function rlRestoreSeed(){ const a = rlAddSeed(RL_SEED2_ID, RL_SEED2_TEXT), b = rlAddSeed(RL_SEED_ID, RL_SEED_TEXT); if(a || b) rlSaveLibrary(); }
 // One-time seed after the data layer has loaded (never reappears once deleted).
 function rlSeedOnce(){
   rlLibrary = rlLoadLibrary(); rlAttempts = rlLoadAttempts();
   let changed = false;
-  if(!rlLsGet(RL_SEED2_FLAG)){ rlLsSet(RL_SEED2_FLAG, '1'); changed = rlAddSeed(RL_SEED2_ID, RL_SEED2_TEXT) || changed; }
-  if(!rlLsGet(RL_SEED_FLAG)){ rlLsSet(RL_SEED_FLAG, '1'); changed = rlAddSeed(RL_SEED_ID, RL_SEED_TEXT) || changed; }
+  if(!rlLsGet(RL_SEED2_FLAG)){ rlLsSet(RL_SEED2_FLAG, '1'); changed = rlAddSeed(RL_SEED2_ID, RL_SEED2_TEXT, 1) || changed; }
+  if(!rlLsGet(RL_SEED_FLAG)){ rlLsSet(RL_SEED_FLAG, '1'); changed = rlAddSeed(RL_SEED_ID, RL_SEED_TEXT, 1) || changed; }
   if(changed) rlSaveLibrary();
 }
 function rlEnterView(){
@@ -11659,9 +12115,10 @@ function rlHandle(e){
   else if(a==='cancel-brief'){ rlClearSess(); rlRenderLibrary(); rlShowScreen('library'); }
   else if(a==='resume') rlResume();
   else if(a==='discard'){ if(confirm('¿Descartar la sesión en curso? Se perderá su progreso.')){ rlClearSess(); rlRenderLibrary(); } }
-  else if(a==='edit'){ const en = rlLibrary[id]; if(en){ rlEditingId = id; $('rlSource').value = en.source; rlLivePreview(); rlStatus(`Editando «${rlEsc(en.title)}». Al pulsar Importar se actualizará ese examen.`, 'pg-status-info'); $('rlSource').scrollIntoView({behavior:'smooth', block:'center'}); } }
-  else if(a==='del'){ const en = rlLibrary[id]; if(en && confirm(`¿Eliminar «${en.title}»? (El historial de intentos se conserva.)`)){ delete rlLibrary[id]; rlSaveLibrary(); rlRenderLibrary(); } }
-  else if(a==='open-attempt'){ const at = rlAttempts.find(x=>x.id===id); if(at) rlShowResult(at); }
+  else if(a==='edit'){ const en = rlEntry(id); if(en){ rlEditingId = id; $('rlSource').value = en.source; rlLivePreview(); rlStatus(`Editando «${rlEsc(en.title)}». Al pulsar Importar se actualizará ese examen.`, 'pg-status-info'); $('rlSource').scrollIntoView({behavior:'smooth', block:'center'}); } }
+  else if(a==='publish') rlPublishToCommunity(id);
+  else if(a==='del'){ const en = rlEntry(id); if(en && confirm(`¿Eliminar «${en.title}»? (El historial de intentos se conserva.)`)){ rlLibrary[id] = {id, deleted:true, title:en.title, createdAt:en.createdAt, updatedAt:Date.now()}; rlSaveLibrary(); rlRenderLibrary(); } }
+  else if(a==='open-attempt'){ const at = rlLiveAttempts().find(x=>x.id===id); if(at) rlShowResult(at); }
   else if(a==='ans') rlAnswer(item, el.getAttribute('data-key'), false);
   else if(a==='flag'){ e.stopPropagation(); if(rlReview) return; const s = rlSess; if(s.flags[item]) delete s.flags[item]; else s.flags[item] = 1; rlSaveSess(); rlRerenderBody(); rlSetActive(item, false); }
   else if(a==='gap'){ rlSetActive(item, false); const row = $('rl-it-'+item); if(row) row.scrollIntoView({block:'center', behavior:'smooth'}); }
@@ -11678,6 +12135,11 @@ function rlHandle(e){
   else if(a==='back-result'){ rlShowResult(rlReview.attempt); }
   else if(a==='to-library') rlToLibrary();
   else if(a==='close-sheet') $('rlSheet').classList.add('hidden');
+  else if(a==='verify-copy') rlCopy(rlBlindPrompt(id), '✓ Examen a ciegas copiado. Pégalo en OTRA IA (distinta a la que lo creó) y luego pulsa «Comparar respuestas».');
+  else if(a==='verify-open'){ rlVerifyId = id; $('rlVerifyIn').value = ''; $('rlVerifyOut').innerHTML = ''; $('rlVerify').classList.remove('hidden'); }
+  else if(a==='repair') rlCopy(rlRepairPrompt(id), '✓ Prompt de corrección copiado. Pégalo en el chat donde la IA creó el examen.');
+  else if(a==='repair-verify') rlCopy(rlRepairPrompt(rlVerifyId), '✓ Prompt de corrección copiado (incluye las discrepancias).');
+  else if(a==='repair-import') rlCopy(rlRepairImportPrompt(), '✓ Prompt de corrección copiado. Pégalo en el chat donde la IA creó el examen.');
 }
 function initReadingUI(){
   $('readingToggleBtn').onclick = rlEnterView;
@@ -11689,10 +12151,14 @@ function initReadingUI(){
   $('rlCopyGenBtn').onclick = () => rlCopyPrompt('generate');
   $('rlCopyConvBtn').onclick = () => rlCopyPrompt('convert');
   $('rlRestoreSeedBtn').onclick = () => { rlRestoreSeed(); rlRenderLibrary(); };
-  $('rlClearHistBtn').onclick = () => { if(confirm('¿Borrar todo el historial de intentos?')){ rlAttempts = []; rlSaveAttempts(); rlRenderLibrary(); } };
+  $('rlClearHistBtn').onclick = () => { if(confirm('¿Borrar todo el historial de intentos?')){ rlAttempts = rlAttempts.map(a => ({id:a.id, deleted:true, at:a.at})); rlSaveAttempts(); rlRenderLibrary(); } };
   let t = null; $('rlSource').addEventListener('input', () => { clearTimeout(t); t = setTimeout(rlLivePreview, 300); });
   $('rlPace').onchange = e => rlSetPref('pace', Number(e.target.value));
   $('rlImmediate').onchange = e => rlSetPref('immediate', e.target.checked);
+  $('rlShuffle').onchange = e => { rlSetPref('shuffle', e.target.checked); rlRenderLibrary(); };
+  $('rlVerifyRun').onclick = rlVerifyRun;
+  $('rlSyncNowBtn').onclick = rlSyncNow;
+  $('rlVerifyClose').onclick = () => $('rlVerify').classList.add('hidden');
   window.addEventListener('resize', rlApplyPaneHeight);
 }
 
